@@ -9,10 +9,16 @@ import {
   Settings, 
   Menu,
   X,
-  ArrowLeftRight
+  ArrowLeftRight,
+  LogOut
 } from 'lucide-react';
+import useAuthStore from '../../shared/stores/authStore';
+import useLogin from '../../shared/hooks/useLogin';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
+  const { user } = useAuthStore();
+  const { logout } = useLogin();
+  
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: BarChart2, label: 'Transactions', path: '/transactions' },
@@ -68,13 +74,25 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       </div>
       <div className="mt-auto p-4">
         <div className="flex items-center space-x-3 rounded-md bg-gray-800 p-3">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
-            <span className="text-sm font-medium">JD</span>
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0">
+            <span className="text-sm font-medium">
+              {user?.name?.substring(0, 2).toUpperCase() || "JD"}
+            </span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-white">John Doe</p>
-            <p className="text-xs text-gray-400">Premium Account</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-white truncate">
+              {user?.name || "Usuario"}
+            </p>
+            <p className="text-xs text-gray-400 truncate">
+              {user?.email || "usuario@ejemplo.com"}
+            </p>
           </div>
+          <button
+            onClick={logout}
+            className="ml-2 p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white flex-shrink-0"
+          >
+            <LogOut size={20} />
+          </button>
         </div>
       </div>
     </aside>

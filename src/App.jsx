@@ -1,22 +1,27 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Transactions from './pages/Transactions';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
 
-import Contacts from './pages/Contacts';
-import Products from './pages/Products';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Conversion from './pages/Conversion';
-import AdminLayout from './layouts/AdminLayout';
-import UsersPage from './pages/admin/UsersPage';
-import ReportsPage from './pages/admin/ReportsPage';
-import ProductsPage from './pages/admin/ProductsPage';
-import TransactionsPage from './pages/admin/TransactionsPage';
-import ProtectedRoute from './components/ProtectedRoute';
-
+import Contacts from "./pages/Contacts";
+import Products from "./pages/Products";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Conversion from "./pages/Conversion";
+import AdminLayout from "./layouts/AdminLayout";
+import UsersPage from "./pages/admin/UsersPage";
+import ReportsPage from "./pages/admin/ReportsPage";
+import ProductsPage from "./pages/admin/ProductsPage";
+import TransactionsPage from "./pages/admin/TransactionsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "sonner";
 function App() {
   return (
     <Router>
@@ -54,6 +59,7 @@ function App() {
           <Route path="transactions" element={<TransactionsPage />} />
         </Route>
       </Routes>
+      <Toaster richColors />
     </Router>
   );
 }

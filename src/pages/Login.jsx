@@ -1,35 +1,27 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import Button from '../components/ui/Button';
+import useLogin from '../shared/hooks/useLogin';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      // Aquí deberías hacer la llamada a tu API de autenticación
-      // Por ahora, simularemos una autenticación exitosa
-      const response = { token: 'dummy-token' }; // Simulación de respuesta de API
-
-      // Guardar el token en localStorage
-      localStorage.setItem('token', response.token);
-
-      // Redirigir al usuario a la página que intentaba acceder o al dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
-    } catch (err) {
-      setError('Credenciales inválidas. Por favor, intente nuevamente.');
+  const { login } = useLogin()
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      email: '',
+      password: ''
     }
-  };
+  });
+
+  const onSubmit = async (data) => {
+    await login(data)
+    
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 py-12 sm:px-6 lg:px-8">
@@ -55,7 +47,7 @@ const Login = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4 rounded-md">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-400">
@@ -67,15 +59,21 @@ const Login = () => {
                 </div>
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register('email', {
+                    required: 'El correo electrónico es requerido',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Correo electrónico inválido'
+                    }
+                  })}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="tu@email.com"
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -89,12 +87,15 @@ const Login = () => {
                 </div>
                 <input
                   id="password"
-                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register('password', {
+                    required: 'La contraseña es requerida',
+                    minLength: {
+                      value: 6,
+                      message: 'La contraseña debe tener al menos 6 caracteres'
+                    }
+                  })}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-10 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="••••••••"
                 />
@@ -109,6 +110,9 @@ const Login = () => {
                     <Eye className="h-5 w-5" />
                   )}
                 </button>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -117,8 +121,8 @@ const Login = () => {
             <div className="flex items-center">
               <input
                 id="remember-me"
-                name="remember-me"
                 type="checkbox"
+                {...register('rememberMe')}
                 className="h-4 w-4 rounded border-gray-700 bg-gray-800 text-primary focus:ring-primary"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
