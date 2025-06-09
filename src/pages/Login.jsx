@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Button from '../components/ui/Button';
@@ -13,14 +13,22 @@ const Login = () => {
   const { login } = useLogin()
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      email: '',
+      identifier: '',
       password: ''
     }
   });
 
   const onSubmit = async (data) => {
-    await login(data)
+    const { identifier, password } = data;
     
+    const isEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(identifier);
+    
+    const loginData = {
+      password,
+      ...(isEmail ? { email: identifier } : { username: identifier })
+    };
+
+    await login(loginData);
   }
 
   return (
@@ -50,29 +58,29 @@ const Login = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4 rounded-md">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-400">
-                Correo electrónico
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-400">
+                Email o nombre de usuario
               </label>
               <div className="relative mt-1">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  {...register('email', {
-                    required: 'El correo electrónico es requerido',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Correo electrónico inválido'
+                  id="identifier"
+                  type="text"
+                  autoComplete="username"
+                  {...register('identifier', {
+                    required: 'El email o nombre de usuario es requerido',
+                    minLength: {
+                      value: 3,
+                      message: 'Debe tener al menos 3 caracteres'
                     }
                   })}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
-                  placeholder="tu@email.com"
+                  placeholder="email@ejemplo.com o usuario"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                {errors.identifier && (
+                  <p className="mt-1 text-sm text-red-500">{errors.identifier.message}</p>
                 )}
               </div>
             </div>

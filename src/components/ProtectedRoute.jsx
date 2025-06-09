@@ -1,12 +1,23 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import useAuthStore from '../shared/stores/authStore';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const location = useLocation();
-  const isAuthenticated = localStorage.getItem('token'); // Verifica si existe un token
+  const { isAuthenticated, getRole } = useAuthStore();
+  const userRole = getRole();
 
   if (!isAuthenticated) {
-    // Redirige al login si no está autenticado
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  
+  if (allowedRoles.length === 0 || userRole === 'ADMIN_ROLE') {
+    return children;
+  }
+
+  
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
