@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import Button from "../components/ui/Button";
+import { Button } from "../components/ui/Button";
 import { useRegister } from "../shared/hooks/useRegister";
 
 const Register = () => {
@@ -408,7 +408,7 @@ const Register = () => {
             <span className="text-gray-400">¿Ya tienes una cuenta? </span>
             <a
               href="/login"
-              className="font-medium text-primary hover:text-primary/90"
+              className="font-medium text-indigo-400 hover:text-indigo-300 "
             >
               Inicia sesión aquí
             </a>

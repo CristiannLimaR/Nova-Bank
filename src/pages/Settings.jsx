@@ -8,7 +8,7 @@ import {
   Wallet,
   HelpCircle,
 } from "lucide-react";
-import Button from "../components/ui/Button";
+import { Button } from "../components/ui/Button";
 import useAuthStore from "../shared/stores/authStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

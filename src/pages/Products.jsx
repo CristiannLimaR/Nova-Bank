@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus, ShoppingBag, Star, CreditCard, Shield, Gift, Coffee, BookOpen, Heart, Sparkles, Scissors, GraduationCap, Ticket, Briefcase, Dumbbell, Tv, GamepadIcon, Utensils, Plane, Wine } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
 
 const products = [
   // Productos Físicos - Ropa y Accesorios

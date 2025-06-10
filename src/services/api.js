@@ -63,3 +63,14 @@ export const getMyAccount = async () => {
     };
   }
 };
+
+export const searchAccount = async (accountNo) => {
+  try {
+    return await apiClient.get(`/account/search/${accountNo}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};

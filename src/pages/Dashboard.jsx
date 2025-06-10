@@ -7,6 +7,7 @@ import useAccountStore from '../shared/stores/AccountStore';
 const Dashboard = () => {
   const getVerify = useAccountStore((state) => state.getVerify);
   const isVerified = getVerify();
+  console.log(isVerified)
 
   if (!isVerified) {
     return (

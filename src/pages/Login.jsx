@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
 import useLogin from '../shared/hooks/useLogin';
 
 const Login = () => {
@@ -139,7 +139,7 @@ const Login = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-primary hover:text-primary/90">
+              <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300">
                 ¿Olvidaste tu contraseña?
               </a>
             </div>
@@ -151,9 +151,9 @@ const Login = () => {
             </Button>
           </div>
 
-          <div className="text-center text-sm">
-            <span className="text-gray-400">¿No tienes una cuenta? </span>
-            <Link to="/register" className="font-medium text-primary hover:text-primary/90">
+          <div className="text-center text-sm ">
+            <span className="text-gray-400 ">¿No tienes una cuenta? </span>
+            <Link to="/register" className="font-medium text-indigo-400 hover:text-indigo-300">
               Regístrate aquí
             </Link>
           </div>

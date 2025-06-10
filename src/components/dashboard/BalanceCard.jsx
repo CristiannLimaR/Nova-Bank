@@ -1,8 +1,11 @@
 import React from "react";
 import { Calendar, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BalanceChart from "./BalanceChart";
 
 const BalanceCard = ({ className }) => {
+  const navigate = useNavigate();
+
   return (
     <div className={`rounded-lg bg-gray-900 p-5 ${className || ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -21,7 +24,10 @@ const BalanceCard = ({ className }) => {
           </div>
           <div className="flex flex-col items-end">
             <div className="flex space-x-3">
-              <button className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors group">
+              <button 
+                onClick={() => navigate('/new-transaction')}
+                className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors group"
+              >
                 <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </button>
               <button className="flex items-center justify-center w-12 h-12 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors group">

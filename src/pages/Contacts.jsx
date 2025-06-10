@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, MoreHorizontal, Star, Send } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 const contacts = [
   {
@@ -67,8 +68,31 @@ const contacts = [
 ];
 
 const Contacts = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContact, setSelectedContact] = useState(contacts[0]);
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferNote, setTransferNote] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+
+  const handleQuickTransfer = () => {
+    if (!transferAmount || !twoFactorCode) {
+      return;
+    }
+
+    navigate('/new-transaction', {
+      state: {
+        destinationAccount: selectedContact.accountNumber.replace(/\s/g, ''),
+        amount: transferAmount,
+        comment: transferNote,
+        twoFactorCode: twoFactorCode,
+        foundUser: {
+          name: selectedContact.name,
+          email: selectedContact.email
+        }
+      }
+    });
+  };
 
   const filteredContacts = contacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -107,22 +131,7 @@ const Contacts = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-gray-700 overflow-hidden">
-                      {contact.avatar ? (
-                        <img
-                          src={contact.avatar}
-                          alt={contact.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-primary text-white">
-                          {contact.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')}
-                        </div>
-                      )}
-                    </div>
+                    
                     <div className="ml-3">
                       <p className="text-sm font-medium text-white">{contact.name}</p>
                       <p className="text-xs text-gray-400">{contact.bank}</p>
@@ -145,31 +154,13 @@ const Contacts = () => {
           <div className="rounded-lg bg-gray-900 p-6">
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="h-14 w-14 rounded-full bg-gray-800 overflow-hidden">
-                  {selectedContact.avatar ? (
-                    <img
-                      src={selectedContact.avatar}
-                      alt={selectedContact.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-primary text-white text-xl">
-                      {selectedContact.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
-                    </div>
-                  )}
-                </div>
+
                 <div className="ml-4">
                   <h2 className="text-xl font-semibold text-white">{selectedContact.name}</h2>
                   <p className="text-sm text-gray-400">{selectedContact.bank}</p>
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button variant="outline" leftIcon={<Send size={16} />} size="sm">
-                  Send Money
-                </Button>
                 <button className="rounded-md p-2 text-gray-400 hover:bg-gray-800 hover:text-white">
                   <MoreHorizontal size={18} />
                 </button>
@@ -180,10 +171,6 @@ const Contacts = () => {
               <div className="rounded-lg bg-gray-800 p-4">
                 <p className="text-sm text-gray-400">Account Number</p>
                 <p className="text-md font-medium text-white">{selectedContact.accountNumber}</p>
-              </div>
-              <div className="rounded-lg bg-gray-800 p-4">
-                <p className="text-sm text-gray-400">Email</p>
-                <p className="text-md font-medium text-white">{selectedContact.email}</p>
               </div>
             </div>
 
@@ -221,6 +208,8 @@ const Contacts = () => {
                     <input
                       type="text"
                       placeholder="0.00"
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
                       className="w-full rounded-r-md border-0 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                     />
                   </div>
@@ -230,10 +219,27 @@ const Contacts = () => {
                   <input
                     type="text"
                     placeholder="What's this for?"
+                    value={transferNote}
+                    onChange={(e) => setTransferNote(e.target.value)}
                     className="w-full rounded-md border-0 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <Button className="w-full" leftIcon={<Send size={16} />}>
+                <div className="mb-4">
+                  <p className="mb-2 text-sm text-gray-400">Código de Verificación 2FA</p>
+                  <input
+                    type="text"
+                    placeholder="Ingresa el código de 6 dígitos"
+                    maxLength="6"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    className="w-full rounded-md border-0 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <Button 
+                  className="w-full" 
+                  leftIcon={<Send size={16} />}
+                  onClick={handleQuickTransfer}
+                >
                   Send Money
                 </Button>
               </div>

@@ -8,6 +8,7 @@ import {
 import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import NewTransaction from "./pages/NewTransaction";
 
 import Contacts from "./pages/Contacts";
 import Products from "./pages/Products";
@@ -39,6 +40,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="new-transaction" element={<NewTransaction />} />
           <Route path="contacts" element={<Contacts />} />
           <Route path="payments" element={<Products />} />
           <Route path="settings" element={<Settings />} />

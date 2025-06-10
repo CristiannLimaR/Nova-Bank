@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, ChevronRight } from 'lucide-react';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 
 const contacts = [
   {
@@ -60,9 +60,8 @@ const FavoriteContacts = () => {
               </div>
             </div>
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
-              className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
             >
               SEND
             </Button>

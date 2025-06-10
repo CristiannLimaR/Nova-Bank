@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, ChevronDown, Plus } from 'lucide-react';
-import Button from '../components/ui/Button';
+import { Button } from '../components/ui/Button';
 
 const transactions = [
   {
@@ -96,6 +96,19 @@ const transactions = [
 const Transactions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+
+  const months = [
+    'All',
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  const getAvailableMonths = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    return months.slice(0, currentMonth + 2); // +2 porque necesitamos incluir 'All' y el mes actual
+  };
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = transaction.merchant
@@ -103,26 +116,29 @@ const Transactions = () => {
       .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === 'All' || transaction.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    const transactionDate = new Date(transaction.date);
+    const transactionMonth = transactionDate.getMonth();
+    const matchesMonth = selectedMonth === 'All' || months[transactionMonth + 1] === selectedMonth;
+
+    return matchesSearch && matchesCategory && matchesMonth;
   });
 
   const categories = ['All', 'Entertainment', 'Shopping', 'Donation', 'Transfer', 'Income'];
+  const availableMonths = getAvailableMonths();
 
   return (
     <div>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <h1 className="text-2xl font-bold text-white">Transactions</h1>
         <div className="flex gap-2">
-          <Button variant="outline" leftIcon={<Calendar size={16} />} size="sm">
-            Last 30 Days
-          </Button>
           <Button leftIcon={<Plus size={16} />} size="sm">
             Nueva Transacción
           </Button>
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="col-span-2 relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
@@ -143,6 +159,21 @@ const Transactions = () => {
             {categories.map((category) => (
               <option key={category} value={category}>
                 {category}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 pointer-events-none text-gray-400" />
+        </div>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="h-10 w-full appearance-none rounded-md border-0 bg-gray-800 pl-10 pr-8 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-primary"
+          >
+            {availableMonths.map((month) => (
+              <option key={month} value={month}>
+                {month}
               </option>
             ))}
           </select>

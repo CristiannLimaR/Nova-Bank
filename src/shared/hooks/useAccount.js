@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyAccount as getMyAccountRequest } from "../../services/api";
+import { getMyAccount as getMyAccountRequest, searchAccount as searchAccountRequest } from "../../services/api";
 import { toast } from "sonner";
 import useAccountStore from "../stores/AccountStore";
 
@@ -23,6 +23,7 @@ const useAccount = () => {
     }
 
     const { account } = response.data;
+    console.log(account)
     setAccount(account)
 
     setLoading(false)
@@ -30,8 +31,32 @@ const useAccount = () => {
     return {success: true}
   };
 
+
+  const searchAccount = async (accountNo) => {
+    setLoading(true);
+    const response = await searchAccountRequest(accountNo);
+
+    if (response.error) {
+      toast.error("Error al obtener cuenta", {
+        description:
+          response.error?.response?.data ||
+          "Ocurrio un error al obtener la cuenta",
+        duration: 2000,
+      });
+      setLoading(false);
+      return { error: true };
+    }
+
+    const { account } = response.data;
+
+    setLoading(false)
+
+    return account
+  };
+
   return {
     getMyAccount,
+    searchAccount,
     loading
   }
 
