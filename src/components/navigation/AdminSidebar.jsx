@@ -7,7 +7,7 @@ import {
   DollarSign,
   Menu,
   X,
-  LogOut,
+  LogOut
 } from "lucide-react";
 import useAuthStore from "../../shared/stores/authStore";
 import useLogin from "../../shared/hooks/useLogin";
