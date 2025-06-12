@@ -105,4 +105,25 @@ export const updateUser = async (userId, data) => {
   }
 };
 
+export const updatePassword = async (data) => {
+  try {
+    const payload = {
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    };
+
+    const response = await apiClient.patch('/user/password', payload);
+    
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
+    };
+  }
+};
+
 
