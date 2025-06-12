@@ -13,10 +13,14 @@ import useAuthStore from "../shared/stores/authStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { updateUser as updateUserApi } from "../services/api.js"
+
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const { user, updateUser } = useAuthStore();
+
+  const [isSaved, setIsSaved] = useState(false);
 
   const profileSchema = z.object({
     name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -45,13 +49,25 @@ const SettingsPage = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    updateUser({
-      ...data,
-      phone: parseInt(data.phone),
-      monthlyIncome: parseInt(data.monthlyIncome),
-    });
+const onSubmit = async (data) => {
+  const updatedData = {
+    ...data,
+    phone: parseInt(data.phone),
+    monthlyIncome: parseInt(data.monthlyIncome),
   };
+
+  const result = await updateUserApi(user._id, updatedData);
+
+  if (!result.error) {
+    updateUser(result.data.user);
+
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 3000);
+  } else {
+    console.error("Error al actualizar el usuario:", result.e);
+  }
+};
+
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
@@ -61,6 +77,12 @@ const SettingsPage = () => {
 
   return (
     <div>
+
+      {isSaved && (
+  <div className="mb-4 animate-fade-in rounded-lg border border-green-500 bg-green-500/10 p-4 text-center text-green-300 backdrop-blur-sm">
+    Perfil actualizado
+  </div>
+)}
       <h1 className="mb-6 text-2xl font-bold text-white">Settings</h1>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">

@@ -75,3 +75,34 @@ export const searchAccount = async (accountNo) => {
   }
 };
 
+export const forgotPassword = async (data) => {
+  try {
+    const response = await apiClient.post("/user/forgot-password", data);
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
+    };
+  }
+};
+
+export const updateUser = async (userId, data) => {
+  try {
+    const response = await apiClient.put(`/user/${userId}`, data);
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
+    };
+  }
+};
+
+

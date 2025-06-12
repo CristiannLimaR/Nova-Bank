@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
 
+import ForgotPassword from "./pages/ForgotPassword";
 import Contacts from "./pages/Contacts";
 import Products from "./pages/Products";
 import Settings from "./pages/Settings";
@@ -29,6 +30,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} /> {/* ¡AÑADE LA NUEVA RUTA AQUÍ! */}
         <Route
           path="/"
           element={
