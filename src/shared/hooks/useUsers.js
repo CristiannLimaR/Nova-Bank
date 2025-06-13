@@ -1,4 +1,4 @@
-import { createUser, updateUser, getUsers} from "@/services/api";
+import { updateUser, getUsers} from "@/services/api";
 import { useState } from "react";
 
 
@@ -7,7 +7,7 @@ const useUsers = () => {
 
   const addUser = async (userData) => {
     setLoading(true);
-    const response = await createUser(userData);
+    const response = await getUsers(userData);
     setLoading(false);
     return response;
   };

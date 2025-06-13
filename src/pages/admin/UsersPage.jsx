@@ -19,7 +19,7 @@ const UsersPage = () => {
     const loadUsers = async () => {
       const res = await fetchUsers();
       if (!res.error) {
-        setUsers(res.data);
+        setUsers(res.data.users);
       }
     };
     loadUsers();
@@ -47,7 +47,7 @@ const UsersPage = () => {
     });
     setIsCreating(true);
   };
-  
+
   const handleSave = async (data) => {
       if (isCreating) {
         const res = await addUser(data);
