@@ -1,58 +1,97 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeftRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowLeftRight } from "lucide-react";
+import { useBalance } from "../../shared/hooks/useBalance.js";
+import { convertirBalancePorMoneda } from "../../services/api.js";
 
-const MONEDAS_PERMITIDAS = ['USD', 'EUR', 'MXN', 'JPY', 'GBP', 'CAD'];
+const MONEDAS_PERMITIDAS = ["USD", "EUR", "MXN", "JPY", "GBP", "CAD"];
 
 const simbolosMoneda = {
-  USD: '$',
-  EUR: '€',
-  MXN: '$',
-  JPY: '¥',
-  GBP: '£',
-  CAD: 'C$'
+  USD: "$",
+  EUR: "€",
+  MXN: "$",
+  JPY: "¥",
+  GBP: "£",
+  CAD: "C$",
 };
 
 const nombresMoneda = {
-  USD: 'Dólar Estadounidense',
-  EUR: 'Euro',
-  MXN: 'Peso Mexicano',
-  JPY: 'Yen Japonés',
-  GBP: 'Libra Esterlina',
-  CAD: 'Dólar Canadiense'
+  USD: "Dólar Estadounidense",
+  EUR: "Euro",
+  MXN: "Peso Mexicano",
+  JPY: "Yen Japonés",
+  GBP: "Libra Esterlina",
+  CAD: "Dólar Canadiense",
 };
 
 const CurrencyConversion = () => {
-  const [monedaSeleccionada, setMonedaSeleccionada] = useState('JPY');
-  const [datosConversion, setDatosConversion] = useState({
-    accountNo: 1299553667,
-    balance_GTQ: 500,
-    monedaDestino: "JPY",
-    tasa_de_Conversion: "18.830053",
-    balanceConvertido: "9415.03"
-  });
+  const [monedaSeleccionada, setMonedaSeleccionada] = useState("JPY");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [datosConversion, setDatosConversion] = useState(null);
+
+  const { accountNo, balance: balanceGTQ, error: balanceError } = useBalance(monedaSeleccionada);
+
+  const lastRequestRef = useRef({ moneda: null, balance: null });
 
   const obtenerConversion = async (moneda) => {
-    //llamada de la funcion del hook
-      
+    if (!accountNo) return;
+
+    if (
+      lastRequestRef.current.moneda === moneda &&
+      lastRequestRef.current.balance === balanceGTQ
+    ) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await convertirBalancePorMoneda(accountNo, moneda);
+      if (res.error) throw res.e;
+
+      const {
+        accountNo: cuenta,
+        balance_GTQ,
+        monedaDestino,
+        tasa_de_Conversion,
+        balanceConvertido,
+      } = res.data;
+
+      setDatosConversion({
+        accountNo: cuenta,
+        balance_GTQ,
+        monedaDestino,
+        tasa_de_Conversion,
+        balanceConvertido,
+      });
+
+      lastRequestRef.current = { moneda, balance: balanceGTQ };
+    } catch (e) {
+      console.error("Error de conversión:", e);
+      setError("Error al obtener la conversión.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    obtenerConversion(monedaSeleccionada);
-  }, [monedaSeleccionada]);
+    if (accountNo && balanceGTQ !== null) {
+      obtenerConversion(monedaSeleccionada);
+    }
+  }, [monedaSeleccionada, accountNo, balanceGTQ]);
 
   const handleMonedaChange = (e) => {
     setMonedaSeleccionada(e.target.value);
   };
 
   return (
-    <div className="rounded-lg bg-gray-900 p-5">
+    <div className="rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 p-6 shadow-lg">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Conversión de Moneda</h2>
+        <h2 className="text-xl font-bold text-white">Conversión de Moneda</h2>
         <div className="flex items-center text-sm text-gray-400">
           <ArrowLeftRight className="mr-2 h-4 w-4" />
-          <span>Actualizado hace 5 min</span>
+          <span>Actualizado automáticamente</span>
         </div>
       </div>
 
@@ -74,50 +113,43 @@ const CurrencyConversion = () => {
           ))}
         </select>
       </div>
-      
+
       {error && (
         <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-md text-red-200">
           {error}
         </div>
       )}
 
-      <div className="rounded-lg bg-gray-800 p-4">
-        {isLoading ? (
-          <div className="flex justify-center items-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <div className="rounded-lg bg-gray-800 p-5 border border-gray-700">
+        {isLoading || !datosConversion ? (
+          <div className="flex justify-center items-center py-5">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-gray-400">Saldo en GTQ</p>
                 <p className="text-2xl font-bold text-white">
-                  Q {datosConversion.balance_GTQ.toFixed(2)}
+                  Q {parseFloat(datosConversion.balance_GTQ).toFixed(2)}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-400">Tasa de cambio</p>
-                <p className="text-sm font-medium text-white">
+                <p className="text-base font-medium text-white">
                   1 GTQ = {datosConversion.tasa_de_Conversion} {datosConversion.monedaDestino}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-400">Saldo convertido a {datosConversion.monedaDestino}</p>
-                  <p className="text-2xl font-bold text-white">
-                    {simbolosMoneda[datosConversion.monedaDestino]} {datosConversion.balanceConvertido}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Número de cuenta</p>
-                  <p className="text-sm font-medium text-white">
-                    {datosConversion.accountNo}
-                  </p>
-                </div>
-              </div>
+            <div className="pt-4 border-t border-gray-700">
+              <p className="text-sm text-gray-400 mb-1">
+                Saldo convertido a {nombresMoneda[datosConversion.monedaDestino]}
+              </p>
+              <p className="text-2xl font-bold text-white">
+                {simbolosMoneda[datosConversion.monedaDestino]}{" "}
+                {parseFloat(datosConversion.balanceConvertido).toFixed(2)}
+              </p>
             </div>
           </>
         )}
@@ -126,4 +158,4 @@ const CurrencyConversion = () => {
   );
 };
 
-export default CurrencyConversion; 
+export default CurrencyConversion;

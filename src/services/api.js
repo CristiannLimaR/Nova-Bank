@@ -75,3 +75,13 @@ export const searchAccount = async (accountNo) => {
   }
 };
 
+export const convertirBalancePorMoneda = async (accountNo, moneda) => {
+  try {
+    return await apiClient.get(`/balance/${accountNo}/${moneda}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
