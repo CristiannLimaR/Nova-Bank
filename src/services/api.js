@@ -75,3 +75,35 @@ export const searchAccount = async (accountNo) => {
   }
 };
 
+export const getUsers = async () => {
+  try {
+    return await apiClient.get("/users");
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const createUser = async (data) => {
+  try {
+    return await apiClient.post("/users", data);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const updateUser = async (id, data) => {
+  try {
+    return await apiClient.put(`/users/${id}`, data);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
