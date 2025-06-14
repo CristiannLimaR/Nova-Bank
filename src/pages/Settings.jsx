@@ -95,24 +95,20 @@ const SettingsPage = () => {
   });
 
   const onPasswordSubmit = async (data) => {
+    console.log('Datos del formulario:', data);
     setPasswordUpdateError("");
     setPasswordUpdateSuccess("");
 
     const payload = {
-    currentPassword: data.currentPassword,
-    newPassword: data.newPassword,
-  };
+      currentPassword: data.currentPassword,
+      password: data.newPassword,
+    };
     
+    console.log('Payload a enviar:', payload);
     const result = await updatePasswordApi(payload);
+    console.log('Respuesta de la API:', result);
 
-    if (!result.error) {
-        setPasswordUpdateSuccess("¡Contraseña actualizada exitosamente!");
-        resetPasswordForm();
-        setTimeout(() => setPasswordUpdateSuccess(""), 4000);
-    } else {
-        setPasswordUpdateError(result.e?.message || "Ocurrió un error al actualizar la contraseña.");
-        setTimeout(() => setPasswordUpdateError(""), 5000);
-    }
+    
   };
 
   const tabs = [

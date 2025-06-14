@@ -42,6 +42,18 @@ apiClient.interceptors.request.use(
   }
 );
 
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const register = async (data) => {
   try {
     return await apiClient.post("/auth/register", data);
@@ -142,7 +154,7 @@ export const updatePassword = async (data) => {
   try {
     const payload = {
       currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
+      password: data.password,
     };
 
     const response = await apiClient.patch('/user/password', payload);

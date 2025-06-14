@@ -9,11 +9,6 @@ import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
-<<<<<<< HEAD
-=======
-
-import ForgotPassword from "./pages/ForgotPassword";
->>>>>>> 136d917c8833ecf4d5bdf9b75b729a71096f6827
 import Contacts from "./pages/Contacts";
 import Products from "./pages/Products";
 import Settings from "./pages/Settings";
@@ -29,6 +24,7 @@ import ProductsPage from "./pages/admin/ProductsPage";
 import TransactionsPage from "./pages/admin/TransactionsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -37,7 +33,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/2fa" element={<TwoFactorAuth />} />
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route element={<MainLayout />}>
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
