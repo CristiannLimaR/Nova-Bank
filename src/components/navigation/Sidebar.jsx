@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   ArrowLeftRight,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react';
 import useAuthStore from '../../shared/stores/authStore';
 import useLogin from '../../shared/hooks/useLogin';
@@ -27,6 +28,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: ArrowLeftRight, label: 'Conversión', path: '/conversion' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
+
+  // Agregar el enlace de administración solo si el usuario es administrador
+  if (user?.role === 'ADMIN_ROLE') {
+    navItems.push({ icon: Shield, label: 'Administración', path: '/admin' });
+  }
 
   return (
     <aside

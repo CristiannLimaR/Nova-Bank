@@ -3,11 +3,11 @@ import { NavLink } from "react-router-dom";
 import {
   Users,
   BarChart2,
-  Package,
-  DollarSign,
-  Menu,
-  X,
-  LogOut
+  ShoppingBag,
+  ArrowLeftRight,
+  Shield,
+  LogOut,
+  X
 } from "lucide-react";
 import useAuthStore from "../../shared/stores/authStore";
 import useLogin from "../../shared/hooks/useLogin";
@@ -15,15 +15,13 @@ import useLogin from "../../shared/hooks/useLogin";
 const AdminSidebar = ({ isOpen, setIsOpen }) => {
   const { user } = useAuthStore();
   const { logout } = useLogin();
+
   const navItems = [
+    { icon: Shield, label: "Dashboard", path: "/admin" },
     { icon: Users, label: "Gestión de Usuarios", path: "/admin/users" },
     { icon: BarChart2, label: "Reportes y Análisis", path: "/admin/reports" },
-    { icon: Package, label: "Productos/Servicios", path: "/admin/products" },
-    {
-      icon: DollarSign,
-      label: "Operaciones Bancarias",
-      path: "/admin/transactions",
-    },
+    { icon: ShoppingBag, label: "Productos/Servicios", path: "/admin/products" },
+    { icon: ArrowLeftRight, label: "Operaciones Bancarias", path: "/admin/transactions" },
   ];
 
   return (
@@ -73,6 +71,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
                     : "text-gray-300 hover:bg-gray-700 hover:text-white"
                 }`
               }
+              end={item.path === "/admin"}
             >
               <item.icon className="mr-3 h-5 w-5" />
               {item.label}
@@ -82,22 +81,22 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       </div>
       <div className="mt-auto p-4">
         <div className="flex items-center space-x-3 rounded-md bg-gray-800 p-3">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0">
             <span className="text-sm font-medium">
               {user?.name?.substring(0, 2).toUpperCase() || "AD"}
             </span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-white">
-              {user?.name || "Admin"}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-white truncate">
+              {user?.name || "Administrador"}
             </p>
-            <p className="text-xs text-gray-400">
-              {user?.role || "Administrador"}
+            <p className="text-xs text-gray-400 truncate">
+              {user?.email || "admin@novabank.com"}
             </p>
           </div>
           <button
             onClick={logout}
-            className="ml-auto p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white"
+            className="ml-2 p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white flex-shrink-0"
           >
             <LogOut size={20} />
           </button>

@@ -31,7 +31,9 @@ const useLogin = () => {
 
     loginStore(user, token);
     console.log(user);
-    getMyAccount();
+    if(user.role === "USER_ROLE") {
+      getMyAccount();
+    }
     setLoading(false);
     toast.success("¡Bienvenido de nuevo!", {
       duration: 3000,
@@ -40,9 +42,11 @@ const useLogin = () => {
     if (user.role === "ADMIN_ROLE") {
       navigate("/admin");
     } else {
-      // if (!user.twoFactorEnabled) {
-      //   navigate("/2fa");
-      navigate("/");
+      if (user.twoFactorEnabled) {
+        navigate("/");
+      } else {
+        navigate("/2fa");
+      }
     }
 
     return { success: true };

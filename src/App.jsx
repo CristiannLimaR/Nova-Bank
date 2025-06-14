@@ -17,6 +17,7 @@ import Register from "./pages/Register";
 import Conversion from "./pages/Conversion";
 import TwoFactorAuth from "./pages/TwoFactorAuth";
 import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import UsersPage from "./pages/admin/UsersPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import ProductsPage from "./pages/admin/ProductsPage";
@@ -43,6 +44,7 @@ function App() {
         </Route>
 
         <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><UsersPage /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ReportsPage /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ProductsPage /></ProtectedRoute>} />
