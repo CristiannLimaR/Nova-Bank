@@ -86,6 +86,17 @@ export const start2FA = async () => {
   }
 };
 
+export const convertirBalancePorMoneda = async (accountNo, moneda) => {
+  try {
+    return await apiClient.get(`/balance/${accountNo}/${moneda}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
 export const verify2FA = async (data) => {
   try {
     return await apiClient.post("/2fa/verify", data);
