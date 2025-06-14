@@ -9,6 +9,11 @@ import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
+<<<<<<< HEAD
+=======
+
+import ForgotPassword from "./pages/ForgotPassword";
+>>>>>>> 136d917c8833ecf4d5bdf9b75b729a71096f6827
 import Contacts from "./pages/Contacts";
 import Products from "./pages/Products";
 import Settings from "./pages/Settings";

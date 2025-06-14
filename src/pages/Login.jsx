@@ -4,7 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Button } from '../components/ui/Button';
 import useLogin from '../shared/hooks/useLogin';
-
+  
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -140,7 +140,7 @@ const Login = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300">
+              <a href="/forgot-password" className="font-medium text-indigo-400 hover:text-indigo-300">
                 ¿Olvidaste tu contraseña?
               </a>
             </div>

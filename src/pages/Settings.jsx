@@ -7,16 +7,28 @@ import {
   CreditCard,
   Wallet,
   HelpCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import useAuthStore from "../shared/stores/authStore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { updateUser as updateUserApi, updatePassword as updatePasswordApi } from "../services/api.js";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const { user, updateUser } = useAuthStore();
+
+  const [isSaved, setIsSaved] = useState(false);
+
+  const [passwordUpdateSuccess, setPasswordUpdateSuccess] = useState("");
+  const [passwordUpdateError, setPasswordUpdateError] = useState("");
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const profileSchema = z.object({
     name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -45,12 +57,62 @@ const SettingsPage = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    updateUser({
+  const onSubmit = async (data) => {
+    const updatedData = {
       ...data,
       phone: parseInt(data.phone),
       monthlyIncome: parseInt(data.monthlyIncome),
+    };
+
+    const result = await updateUserApi(user._id, updatedData);
+
+    if (!result.error) {
+      updateUser(result.data.user);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } else {
+      console.error("Error al actualizar el usuario:", result.e);
+    }
+  };
+
+  const passwordSchema = z.object({
+      currentPassword: z.string().min(1, "La contraseña actual es requerida."),
+      newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres."),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Las contraseñas no coinciden.",
+      path: ["confirmPassword"],
     });
+
+  const {
+    register: registerPassword,
+    handleSubmit: handlePasswordSubmit,
+    formState: { errors: passwordErrors },
+    reset: resetPasswordForm,
+  } = useForm({
+    resolver: zodResolver(passwordSchema),
+  });
+
+  const onPasswordSubmit = async (data) => {
+    setPasswordUpdateError("");
+    setPasswordUpdateSuccess("");
+
+    const payload = {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword,
+  };
+    
+    const result = await updatePasswordApi(payload);
+
+    if (!result.error) {
+        setPasswordUpdateSuccess("¡Contraseña actualizada exitosamente!");
+        resetPasswordForm();
+        setTimeout(() => setPasswordUpdateSuccess(""), 4000);
+    } else {
+        setPasswordUpdateError(result.e?.message || "Ocurrió un error al actualizar la contraseña.");
+        setTimeout(() => setPasswordUpdateError(""), 5000);
+    }
   };
 
   const tabs = [
@@ -61,6 +123,11 @@ const SettingsPage = () => {
 
   return (
     <div>
+      {isSaved && (
+        <div className="mb-4 animate-fade-in rounded-lg border border-green-500 bg-green-500/10 p-4 text-center text-green-300 backdrop-blur-sm">
+          Perfil actualizado
+        </div>
+      )}
       <h1 className="mb-6 text-2xl font-bold text-white">Settings</h1>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -239,72 +306,119 @@ const SettingsPage = () => {
                 <h2 className="mb-6 text-xl font-semibold text-white">
                   Security Settings
                 </h2>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="mb-4 text-lg font-medium text-white">
-                      Change Password
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label
-                          htmlFor="currentPassword"
-                          className="block text-sm font-medium text-gray-400"
-                        >
-                          Current Password
-                        </label>
-                        <div className="relative mt-1">
-                          <input
-                            type="password"
-                            id="currentPassword"
-                            className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
-                          />
-                          <button className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-white">
-                            <Lock className="h-4 w-4" />
-                          </button>
+
+                {passwordUpdateSuccess && (
+                  <div className="mb-4 animate-fade-in rounded-lg border border-green-500 bg-green-500/10 p-3 text-center text-sm text-green-300">
+                    {passwordUpdateSuccess}
+                  </div>
+                )}
+                {passwordUpdateError && (
+                  <div className="mb-4 animate-fade-in rounded-lg border border-red-500 bg-red-500/10 p-3 text-center text-sm text-red-400">
+                    {passwordUpdateError}
+                  </div>
+                )}
+                
+                <form onSubmit={handlePasswordSubmit(onPasswordSubmit)}>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="mb-4 text-lg font-medium text-white">
+                        Change Password
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="currentPassword"
+                            className="block text-sm font-medium text-gray-400"
+                          >
+                            Current Password
+                          </label>
+                          <div className="relative mt-1">
+                            <input
+                              type={showCurrent ? "text" : "password"}
+                              id="currentPassword"
+                              {...registerPassword("currentPassword")}
+                              className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCurrent((v) => !v)}
+                              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400"
+                              tabIndex={-1}
+                            >
+                              {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          {passwordErrors.currentPassword && (
+                            <p className="mt-1 text-sm text-red-500">
+                              {passwordErrors.currentPassword.message}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="newPassword"
+                            className="block text-sm font-medium text-gray-400"
+                          >
+                            New Password
+                          </label>
+                          <div className="relative mt-1">
+                            <input
+                              type={showNew ? "text" : "password"}
+                              id="newPassword"
+                              {...registerPassword("newPassword")}
+                              className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNew((v) => !v)}
+                              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400"
+                              tabIndex={-1}
+                            >
+                              {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          {passwordErrors.newPassword && (
+                            <p className="mt-1 text-sm text-red-500">
+                              {passwordErrors.newPassword.message}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="confirmPassword"
+                            className="block text-sm font-medium text-gray-400"
+                          >
+                            Confirm New Password
+                          </label>
+                          <div className="relative mt-1">
+                            <input
+                              type={showConfirm ? "text" : "password"}
+                              id="confirmPassword"
+                              {...registerPassword("confirmPassword")}
+                              className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirm((v) => !v)}
+                              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400"
+                              tabIndex={-1}
+                            >
+                              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          {passwordErrors.confirmPassword && (
+                            <p className="mt-1 text-sm text-red-500">
+                              {passwordErrors.confirmPassword.message}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <label
-                          htmlFor="newPassword"
-                          className="block text-sm font-medium text-gray-400"
-                        >
-                          New Password
-                        </label>
-                        <div className="relative mt-1">
-                          <input
-                            type="password"
-                            id="newPassword"
-                            className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
-                          />
-                          <button className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-white">
-                            <Lock className="h-4 w-4" />
-                          </button>
-                        </div>
+                      <div className="mt-6">
+                        <Button type="submit">Update Password</Button>
                       </div>
-                      <div>
-                        <label
-                          htmlFor="confirmPassword"
-                          className="block text-sm font-medium text-gray-400"
-                        >
-                          Confirm New Password
-                        </label>
-                        <div className="relative mt-1">
-                          <input
-                            type="password"
-                            id="confirmPassword"
-                            className="block w-full rounded-md border-0 bg-gray-800 px-3 py-2 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
-                          />
-                          <button className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-white">
-                            <Lock className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Button>Update Password</Button>
                     </div>
                   </div>
-                </div>
+                </form>
               </div>
             )}
 

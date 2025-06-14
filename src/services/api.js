@@ -86,6 +86,21 @@ export const start2FA = async () => {
   }
 };
 
+export const forgotPassword = async (data) => {
+  try {
+    const response = await apiClient.post("/user/forgot-password", data);
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
+    };
+  }
+};
+
 export const convertirBalancePorMoneda = async (accountNo, moneda) => {
   try {
     return await apiClient.get(`/balance/${accountNo}/${moneda}`);
@@ -97,6 +112,21 @@ export const convertirBalancePorMoneda = async (accountNo, moneda) => {
   }
 };
 
+export const updateUser = async (userId, data) => {
+  try {
+    const response = await apiClient.put(`/user/${userId}`, data);
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
+    };
+  }
+};
+
 export const verify2FA = async (data) => {
   try {
     return await apiClient.post("/2fa/verify", data);
@@ -104,6 +134,27 @@ export const verify2FA = async (data) => {
     return {
       error: true,
       e,
+    };
+  }
+};
+
+export const updatePassword = async (data) => {
+  try {
+    const payload = {
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    };
+
+    const response = await apiClient.patch('/user/password', payload);
+    
+    return {
+      data: response.data,
+      error: false,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e: e.response ? e.response.data : e.message,
     };
   }
 };
