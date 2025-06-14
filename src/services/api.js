@@ -75,3 +75,25 @@ export const searchAccount = async (accountNo) => {
   }
 };
 
+export const start2FA = async () => {
+  try {
+    return await apiClient.post("/2fa/start");
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const verify2FA = async (data) => {
+  try {
+    return await apiClient.post("/2fa/verify", data);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+

@@ -3,6 +3,20 @@ import { Calendar, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BalanceChart from "./BalanceChart";
 
+const balanceData = {
+  totalBalance: 2976.00,
+  income: {
+    amount: 56976.00,
+    percentage: 10,
+    trend: 'up'
+  },
+  expense: {
+    amount: 54000.00,
+    percentage: 5,
+    trend: 'down'
+  }
+};
+
 const BalanceCard = ({ className }) => {
   const navigate = useNavigate();
 
@@ -20,7 +34,7 @@ const BalanceCard = ({ className }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-400 text-sm">Total Balance</p>
-            <h3 className="text-3xl font-bold text-white">$ 2,976.00</h3>
+            <h3 className="text-3xl font-bold text-white">$ {balanceData.totalBalance.toLocaleString()}</h3>
           </div>
           <div className="flex flex-col items-end">
             <div className="flex space-x-3">
@@ -68,10 +82,10 @@ const BalanceCard = ({ className }) => {
               <span className="ml-1 text-sm text-gray-400">Income</span>
             </div>
             <span className="rounded-full bg-green-900/20 px-2 py-1 text-xs text-green-500">
-              +10%
+              +{balanceData.income.percentage}%
             </span>
           </div>
-          <p className="text-lg font-semibold text-white">$ 56,976.00</p>
+          <p className="text-lg font-semibold text-white">$ {balanceData.income.amount.toLocaleString()}</p>
         </div>
 
         <div className="rounded-lg bg-gray-800 p-4">
@@ -95,10 +109,10 @@ const BalanceCard = ({ className }) => {
               <span className="ml-1 text-sm text-gray-400">Expense</span>
             </div>
             <span className="rounded-full bg-red-900/20 px-2 py-1 text-xs text-red-500">
-              -5%
+              -{balanceData.expense.percentage}%
             </span>
           </div>
-          <p className="text-lg font-semibold text-white">$ 54,000.00</p>
+          <p className="text-lg font-semibold text-white">$ {balanceData.expense.amount.toLocaleString()}</p>
         </div>
       </div>
 

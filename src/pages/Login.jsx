@@ -28,7 +28,8 @@ const Login = () => {
       ...(isEmail ? { email: identifier } : { username: identifier })
     };
 
-    await login(loginData);
+    const response = await login(loginData);
+
   }
 
   return (
