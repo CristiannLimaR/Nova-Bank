@@ -7,7 +7,7 @@ import {
   DollarSign,
   Menu,
   X,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import useAuthStore from "../../shared/stores/authStore";
 import useLogin from "../../shared/hooks/useLogin";
@@ -24,6 +24,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       label: "Operaciones Bancarias",
       path: "/admin/transactions",
     },
+    { icon: Users, label: "Cuentas", path: "/admin/accounts" }, // <-- cambio aquí
   ];
 
   return (
@@ -91,9 +92,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
             <p className="text-sm font-medium text-white">
               {user?.name || "Admin"}
             </p>
-            <p className="text-xs text-gray-400">
-              {user?.role || "Administrador"}
-            </p>
+            <p className="text-xs text-gray-400">{user?.role || "Administrador"}</p>
           </div>
           <button
             onClick={logout}

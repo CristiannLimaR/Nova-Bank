@@ -9,26 +9,33 @@ import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import NewTransaction from "./pages/NewTransaction";
-
 import Contacts from "./pages/Contacts";
 import Products from "./pages/Products";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Conversion from "./pages/Conversion";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "sonner";
+
+import MyAccountPage from "./pages/Account";
+
 import AdminLayout from "./layouts/AdminLayout";
 import UsersPage from "./pages/admin/UsersPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import ProductsPage from "./pages/admin/ProductsPage";
 import TransactionsPage from "./pages/admin/TransactionsPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { Toaster } from "sonner";
+import AccountAdminPage from "./pages/admin/AccountPage"; // NUEVA
+
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Páginas públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Rutas protegidas - Usuario normal */}
         <Route
           path="/"
           element={
@@ -45,7 +52,11 @@ function App() {
           <Route path="payments" element={<Products />} />
           <Route path="settings" element={<Settings />} />
           <Route path="conversion" element={<Conversion />} />
+
+          <Route path="my-account" element={<MyAccountPage />} />
         </Route>
+
+        {/* Rutas protegidas - Admin */}
         <Route
           path="/admin"
           element={
@@ -59,8 +70,10 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="accounts" element={<AccountAdminPage />} />
         </Route>
       </Routes>
+
       <Toaster richColors />
     </Router>
   );

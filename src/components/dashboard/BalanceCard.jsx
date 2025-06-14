@@ -1,13 +1,35 @@
 import React from "react";
 import { Calendar, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import useBalance from "../../shared/hooks/useBalance";
 import BalanceChart from "./BalanceChart";
+import useAccountStore from "../../shared/stores/accountStore";
+import useIncomeExpense from "../../shared/hooks/useIncomeExpense"; // importa el hook
 
 const BalanceCard = ({ className }) => {
   const navigate = useNavigate();
+  const { convertedBalance, loading } = useBalance("USD");
+  const account = useAccountStore((state) => state.account);
+  const accountId = account?._id;
+
+  // Usamos el hook para obtener ingresos y gastos
+  const {
+    income,
+    incomeTrend,
+    incomePercentage,
+    expense,
+    expenseTrend,
+    expensePercentage,
+    loading: loadingIncomeExpense,
+    error: errorIncomeExpense,
+  } = useIncomeExpense(accountId);
+
+  // Función para elegir color y símbolo según tendencia
+  const trendColor = (trend) => (trend === "up" ? "green" : "red");
+  const trendSign = (trend) => (trend === "up" ? "+" : "-");
 
   return (
-    <div className={`rounded-lg bg-gray-900 p-5 ${className || ''}`}>
+    <div className={`rounded-lg bg-gray-900 p-5 ${className || ""}`}>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">Balance</h2>
         <button className="flex items-center text-xs text-gray-400 hover:text-white">
@@ -20,12 +42,14 @@ const BalanceCard = ({ className }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-400 text-sm">Total Balance</p>
-            <h3 className="text-3xl font-bold text-white">$ 2,976.00</h3>
+            <h3 className="text-3xl font-bold text-white">
+              {loading ? "Cargando..." : `$ ${convertedBalance?.balanceConvertido || "0.00"}`}
+            </h3>
           </div>
           <div className="flex flex-col items-end">
             <div className="flex space-x-3">
-              <button 
-                onClick={() => navigate('/new-transaction')}
+              <button
+                onClick={() => navigate("/new-transaction")}
                 className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors group"
               >
                 <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -46,17 +70,13 @@ const BalanceCard = ({ className }) => {
         </div>
       </div>
 
+      {/* Income y Expense desde API */}
       <div className="mb-6 grid grid-cols-2 gap-4">
+        {/* Income */}
         <div className="rounded-lg bg-gray-800 p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 19V5M12 5L5 12M12 5L19 12"
                   stroke="#3DD9C9"
@@ -67,23 +87,34 @@ const BalanceCard = ({ className }) => {
               </svg>
               <span className="ml-1 text-sm text-gray-400">Income</span>
             </div>
-            <span className="rounded-full bg-green-900/20 px-2 py-1 text-xs text-green-500">
-              +10%
-            </span>
+            {loadingIncomeExpense ? (
+              <span className="rounded-full bg-green-900/20 px-2 py-1 text-xs text-green-500">...</span>
+            ) : (
+              <span
+                className={`rounded-full px-2 py-1 text-xs ${
+                  trendColor(incomeTrend) === "green"
+                    ? "bg-green-900/20 text-green-500"
+                    : "bg-red-900/20 text-red-500"
+                }`}
+              >
+                {trendSign(incomeTrend)}
+                {incomePercentage}%
+              </span>
+            )}
           </div>
-          <p className="text-lg font-semibold text-white">$ 56,976.00</p>
+          <p className="text-lg font-semibold text-white">
+            {loadingIncomeExpense ? "Cargando..." : `$ ${income.toLocaleString()}`}
+          </p>
+          {errorIncomeExpense && (
+            <p className="text-xs text-red-500 mt-1">Error: {errorIncomeExpense}</p>
+          )}
         </div>
 
+        {/* Expense */}
         <div className="rounded-lg bg-gray-800 p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 5V19M12 19L5 12M12 19L19 12"
                   stroke="#FF7E5F"
@@ -94,15 +125,32 @@ const BalanceCard = ({ className }) => {
               </svg>
               <span className="ml-1 text-sm text-gray-400">Expense</span>
             </div>
-            <span className="rounded-full bg-red-900/20 px-2 py-1 text-xs text-red-500">
-              -5%
-            </span>
+            {loadingIncomeExpense ? (
+              <span className="rounded-full bg-red-900/20 px-2 py-1 text-xs text-red-500">...</span>
+            ) : (
+              <span
+                className={`rounded-full px-2 py-1 text-xs ${
+                  trendColor(expenseTrend) === "green"
+                    ? "bg-green-900/20 text-green-500"
+                    : "bg-red-900/20 text-red-500"
+                }`}
+              >
+                {trendSign(expenseTrend)}
+                {expensePercentage}%
+              </span>
+            )}
           </div>
-          <p className="text-lg font-semibold text-white">$ 54,000.00</p>
+          <p className="text-lg font-semibold text-white">
+            {loadingIncomeExpense ? "Cargando..." : `$ ${expense.toLocaleString()}`}
+          </p>
+          {errorIncomeExpense && (
+            <p className="text-xs text-red-500 mt-1">Error: {errorIncomeExpense}</p>
+          )}
         </div>
       </div>
 
-      <BalanceChart />
+      {/* 📊 Aquí usamos el accountId dinámicamente */}
+      {accountId && <BalanceChart accountId={accountId} />}
     </div>
   );
 };

@@ -1,41 +1,32 @@
-import React from 'react';
+// components/FavoriteContacts.jsx
+import React, { useState, useEffect } from 'react';
 import { User, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/Button';
-
-const contacts = [
-  {
-    id: '1',
-    name: 'María García',
-    account: '**** 4567',
-    avatar: null,
-  },
-  {
-    id: '2',
-    name: 'Juan Pérez',
-    account: '**** 7890',
-    avatar: null,
-  },
-  {
-    id: '3',
-    name: 'Ana Martínez',
-    account: '**** 1234',
-    avatar: null,
-  },
-  {
-    id: '4',
-    name: 'Carlos López',
-    account: '**** 5678',
-    avatar: null,
-  },
-  {
-    id: '5',
-    name: 'Laura Sánchez',
-    account: '**** 9012',
-    avatar: null,
-  },
-];
+import { getFavoriteContacts } from '../../services/userService';
 
 const FavoriteContacts = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const data = await getFavoriteContacts();
+        setContacts(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="rounded-lg bg-gray-900 p-5">
       <h2 className="mb-4 text-lg font-semibold text-white">Contactos Favoritos</h2>
@@ -59,10 +50,7 @@ const FavoriteContacts = () => {
                 <p className="text-xs text-gray-400">{contact.account}</p>
               </div>
             </div>
-            <Button
-              variant="default"
-              size="sm"
-            >
+            <Button variant="default" size="sm">
               SEND
             </Button>
           </div>
@@ -76,4 +64,4 @@ const FavoriteContacts = () => {
   );
 };
 
-export default FavoriteContacts; 
+export default FavoriteContacts;

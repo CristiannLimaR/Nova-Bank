@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, Calendar, ChevronDown, Plus } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/Button.jsx';
 
 const transactions = [
   {

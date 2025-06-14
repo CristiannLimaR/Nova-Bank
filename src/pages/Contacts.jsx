@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus, MoreHorizontal, Star, Send } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/Button.jsx';
 import { useNavigate } from 'react-router-dom';
 
 const contacts = [

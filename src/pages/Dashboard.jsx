@@ -2,8 +2,7 @@ import React from 'react';
 import BalanceCard from '../components/dashboard/BalanceCard';
 import TransactionsList from '../components/dashboard/TransactionsList';
 import FavoriteContacts from '../components/dashboard/FavoriteContacts';
-import CreditInfo from '../components/dashboard/CreditInfo';
-import useAccountStore from '../shared/stores/AccountStore';
+import useAccountStore from '../shared/stores/accountStore';
 
 const Dashboard = () => {
   const getVerify = useAccountStore((state) => state.getVerify);
@@ -34,9 +33,6 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <BalanceCard />
-      </div>
-      <div>
-        <CreditInfo />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

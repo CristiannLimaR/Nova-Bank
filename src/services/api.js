@@ -6,6 +6,25 @@ const apiClient = axios.create({
   timeout: 5000,
 });
 
+// Interceptor para agregar token a cada petición
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().getToken();
+
+    if (token) {
+      config.headers["x-token"] = token;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient; // <---- ESTA LÍNEA ES LA CLAVE
+
+// Iniciar sesión
 export const login = async (data) => {
   try {
     const response = await apiClient.post("/auth/login", data);
@@ -27,21 +46,6 @@ export const login = async (data) => {
   }
 };
 
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().getToken();
-
-    if (token) {
-      config.headers["x-token"] = token;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 export const register = async (data) => {
   try {
     return await apiClient.post("/auth/register", data);
@@ -52,26 +56,3 @@ export const register = async (data) => {
     };
   }
 };
-
-export const getMyAccount = async () => {
-  try {
-    return await apiClient.get("/account/my-account");
-  } catch (e) {
-    return {
-      error: true,
-      e,
-    };
-  }
-};
-
-export const searchAccount = async (accountNo) => {
-  try {
-    return await apiClient.get(`/account/search/${accountNo}`);
-  } catch (e) {
-    return {
-      error: true,
-      e,
-    };
-  }
-};
-
