@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, Search, Edit, Eye } from 'lucide-react';
 import {
   Dialog,
@@ -12,21 +12,25 @@ import UserForm from '@/components/forms/UserForm';
 import useUsers from "@/shared/hooks/useUsers";
 
 const UsersPage = () => {
-  const [users, setUsers] = useState([]);
-  const { addUser, editUser, fetchUsers } = useUsers();
+  const [users, setUsers] = useState([
+    {
+      _id: "6844446cf43bdae67e078546",
+      name: "Cristian Lima",
+      username: "CristiannLima",
+      dpi: 3875205380101,
+      address: "6ta calle 19-63 sector 7 alamedas de santa clara zona 3, Villa Nueva",
+      phone: 51380497,
+      email: "cristiannlima2@gmail.com",
+      role: "USER_ROLE",
+      monthlyIncome: 100,
+      status: true,
+      accountType: "AHORRO"
+    }
+  ]);
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      const res = await fetchUsers();
-      if (!res.error) {
-        setUsers(res.data.users);
-      }
-    };
-    loadUsers();
-  }, []);
-
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+const [editingUser, setEditingUser] = useState(null);
+const [isCreating, setIsCreating] = useState(false);
+const { addUser, editUser, loading } = useUsers();
 
   const handleEdit = (user) => {
     setEditingUser({ ...user });
@@ -48,17 +52,16 @@ const UsersPage = () => {
     setIsCreating(true);
   };
 
-  const handleSave = async (data) => {
-      if (isCreating) {
-        const res = await addUser(data);
-        console.log('creando', res);
-      } else {
-        const res = await editUser(editingUser._id, data);
-        console.log('editando', res);
-      }
-      setEditingUser(null);
-      setIsCreating(false);
-    };
+  const handleSave = (data) => {
+    console.log('Datos del usuario:', data);
+    if(isCreating){
+      console.log('creando', data) //funcion de hook para agregar
+    }else{
+      console.log('editando', data) // funcion de hook para editar id
+    }
+    setEditingUser(null);
+    setIsCreating(false);
+  };
 
   const handleCancel = () => {
     setEditingUser(null);

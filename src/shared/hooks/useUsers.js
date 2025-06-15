@@ -1,13 +1,12 @@
-import { updateUser, getUsers} from "@/services/api";
+import { createUser, updateUser, getUsers } from "@/services/api";
 import { useState } from "react";
-
 
 const useUsers = () => {
   const [loading, setLoading] = useState(false);
 
   const addUser = async (userData) => {
     setLoading(true);
-    const response = await getUsers(userData);
+    const response = await createUser(userData);
     setLoading(false);
     return response;
   };
@@ -26,7 +25,12 @@ const useUsers = () => {
     return response;
   };
 
-  return { addUser, editUser, fetchUsers, loading };
+  return { 
+    addUser, 
+    editUser, 
+    fetchUsers, 
+    loading 
+};
 };
 
 export default useUsers;

@@ -75,9 +75,9 @@ export const searchAccount = async (accountNo) => {
   }
 };
 
-export const getUsers = async () => {
+export const createUser = async (data) => {
   try {
-    return await apiClient.get("/user");
+    return await apiClient.post("/auth/register", data);
   } catch (e) {
     return {
       error: true,
@@ -86,10 +86,20 @@ export const getUsers = async () => {
   }
 };
 
-
 export const updateUser = async (id, data) => {
   try {
     return await apiClient.put(`/user/${id}`, data);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const getUsers = async () => {
+  try {
+    return await apiClient.get("/user");
   } catch (e) {
     return {
       error: true,
