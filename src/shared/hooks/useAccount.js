@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getMyAccount as getMyAccountRequest, searchAccount as searchAccountRequest } from "../../services/api";
 import { toast } from "sonner";
-import useAccountStore from "../stores/AccountStore";
+import { getMyAccount as getMyAccountRequest, searchAccount as searchAccountRequest, getAllAccounts as getAllAccountsRequest, verifyAccount as verifyAccountRequest } from "../../services/api";
+
+import useAccountStore from "../stores/accountStore.js";
 
 const useAccount = () => {
   const [loading, setLoading] = useState(false);
@@ -53,13 +53,37 @@ const useAccount = () => {
 
     return account
   };
+  const fetchAllAccounts = async () => {
+    setLoading(true);
+    const response = await getAllAccountsRequest();
+    setLoading(false);
+
+    if (response.error) {
+      toast.error("Error al obtener cuentas.");
+      return { error: true };
+    }
+
+    return { accounts: response.data.accounts };
+  };
+
+  const changeAccountVerification = async (id, verify) => {
+    const response = await verifyAccountRequest(id, verify);
+    if (response.error) {
+      toast.error("Error actualizando verificación.");
+      return { error: true };
+    }
+
+    toast.success("Verificación actualizada.");
+    return { success: true };
+  };
 
   return {
     getMyAccount,
     searchAccount,
-    loading
-  }
-
+    fetchAllAccounts,
+    changeAccountVerification,
+    loading,
+  };
 };
 
-export default useAccount
+export default useAccount;

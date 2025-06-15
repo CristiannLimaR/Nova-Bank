@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,19 +8,34 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+} from "chart.js";
+ 
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BalanceChart = () => {
+const BalanceChart = ({ data }) => {
+
+  console.log(data, 'data');
+  const chartData = {
+    labels: data.labels,
+    datasets: [
+      {
+        label: "Ingresos",
+        data: data.datasets[0]?.data,
+        backgroundColor: "#3DD9C9",
+        borderRadius: 6,
+        barThickness: 10,
+      },
+      {
+        label: "Gastos",
+        data: data.datasets[1]?.data,
+        backgroundColor: "#FF7E5F",
+        borderRadius: 6,
+        barThickness: 10,
+      },
+    ],
+  };
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -56,46 +72,26 @@ const BalanceChart = () => {
         ticks: {
           color: '#6B7280',
           callback: (value) => {
-            if (value === 0) return '0';
-            if (value === 20000) return '20k';
-            if (value === 40000) return '40k';
-            if (value === 60000) return '60k';
-            if (value === 80000) return '80k';
-            if (value === 100000) return '100k';
-            return '';
+            if (value >= 1000) {
+              return `Q ${(value / 1000).toFixed(1)}k`;
+            }
+            return `Q ${value}`;
           },
+          font: {
+            size: 12
+          }
         },
+        beginAtZero: true,
+        max: Math.max(...data.datasets[0].data, ...data.datasets[1].data) * 1.2
       },
     },
   };
 
-  const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'Income',
-        data: [40000, 65000, 25000, 50000, 35000, 75000],
-        backgroundColor: '#3DD9C9',
-        borderRadius: 6,
-        barThickness: 10,
-      },
-      {
-        label: 'Expense',
-        data: [30000, 20000, 15000, 35000, 48000, 55000],
-        backgroundColor: '#FF7E5F',
-        borderRadius: 6,
-        barThickness: 10,
-      },
-    ],
-  };
-
   return (
     <div className="h-64">
-      <Bar options={options} data={data} />
+      <Bar options={options} data={chartData} />
     </div>
   );
 };
 
-export default BalanceChart; 
+export default BalanceChart;

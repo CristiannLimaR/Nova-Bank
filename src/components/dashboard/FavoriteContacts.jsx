@@ -1,53 +1,44 @@
-import React from 'react';
+// components/FavoriteContacts.jsx
+import React, { useState, useEffect } from 'react';
 import { User, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/Button';
-
-const contacts = [
-  {
-    id: '1',
-    name: 'María García',
-    account: '**** 4567',
-    avatar: null,
-  },
-  {
-    id: '2',
-    name: 'Juan Pérez',
-    account: '**** 7890',
-    avatar: null,
-  },
-  {
-    id: '3',
-    name: 'Ana Martínez',
-    account: '**** 1234',
-    avatar: null,
-  },
-  {
-    id: '4',
-    name: 'Carlos López',
-    account: '**** 5678',
-    avatar: null,
-  },
-  {
-    id: '5',
-    name: 'Laura Sánchez',
-    account: '**** 9012',
-    avatar: null,
-  },
-];
+import useAuthStore from '../../shared/stores/authStore';
 
 const FavoriteContacts = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuthStore();
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        console.log(user.favorites);
+        setContacts(user.favorites);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
+  if (loading) return <p>Cargando...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="rounded-lg bg-gray-900 p-5">
       <h2 className="mb-4 text-lg font-semibold text-white">Contactos Favoritos</h2>
       <div className="space-y-4">
         {contacts.map((contact) => (
-          <div key={contact.id} className="flex items-center justify-between">
+          <div key={contact._id} className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800">
                 {contact.avatar ? (
                   <img
                     src={contact.avatar}
-                    alt={contact.name}
+                    alt={contact.alias}
                     className="h-full w-full rounded-full object-cover"
                   />
                 ) : (
@@ -55,14 +46,11 @@ const FavoriteContacts = () => {
                 )}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-white">{contact.name}</p>
-                <p className="text-xs text-gray-400">{contact.account}</p>
+                <p className="text-sm font-medium text-white">{contact.alias}</p>
+                <p className="text-xs text-gray-400">{contact.account.accountNo}</p>
               </div>
             </div>
-            <Button
-              variant="default"
-              size="sm"
-            >
+            <Button variant="default" size="sm">
               SEND
             </Button>
           </div>
@@ -76,4 +64,4 @@ const FavoriteContacts = () => {
   );
 };
 
-export default FavoriteContacts; 
+export default FavoriteContacts;

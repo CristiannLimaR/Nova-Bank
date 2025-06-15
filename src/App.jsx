@@ -25,11 +25,13 @@ import TransactionsPage from "./pages/admin/TransactionsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 import ForgotPassword from "./pages/ForgotPassword";
+import AccountAdminPage from "./pages/admin/AccountPage";
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Páginas públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/2fa" element={<TwoFactorAuth />} />
@@ -50,6 +52,7 @@ function App() {
           <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ReportsPage /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ProductsPage /></ProtectedRoute>} />
           <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><TransactionsPage /></ProtectedRoute>} />
+          <Route path="/admin/accounts" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><AccountAdminPage /></ProtectedRoute>} />
         </Route>
       </Routes>
       <Toaster />

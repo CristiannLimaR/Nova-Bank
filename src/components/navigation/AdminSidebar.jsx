@@ -7,7 +7,9 @@ import {
   ArrowLeftRight,
   Shield,
   LogOut,
-  X
+  X,
+  Package,
+  DollarSign
 } from "lucide-react";
 import useAuthStore from "../../shared/stores/authStore";
 import useLogin from "../../shared/hooks/useLogin";
@@ -20,8 +22,13 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
     { icon: Shield, label: "Dashboard", path: "/admin" },
     { icon: Users, label: "Gestión de Usuarios", path: "/admin/users" },
     { icon: BarChart2, label: "Reportes y Análisis", path: "/admin/reports" },
-    { icon: ShoppingBag, label: "Productos/Servicios", path: "/admin/products" },
-    { icon: ArrowLeftRight, label: "Operaciones Bancarias", path: "/admin/transactions" },
+    { icon: Package, label: "Productos/Servicios", path: "/admin/products" },
+    {
+      icon: DollarSign,
+      label: "Operaciones Bancarias",
+      path: "/admin/transactions",
+    },
+    { icon: Users, label: "Cuentas", path: "/admin/accounts" }, // <-- cambio aquí
   ];
 
   return (

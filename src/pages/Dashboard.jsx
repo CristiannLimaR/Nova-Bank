@@ -1,13 +1,23 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import BalanceCard from '../components/dashboard/BalanceCard';
 import TransactionsList from '../components/dashboard/TransactionsList';
 import FavoriteContacts from '../components/dashboard/FavoriteContacts';
-import useAccountStore from '../shared/stores/AccountStore';
-
+import CreditInfo from '../components/dashboard/CreditInfo';
+import useAccountStore from '../shared/stores/accountStore';
+import useTransactions from '../shared/hooks/useTransactions';
 const Dashboard = () => {
   const getVerify = useAccountStore((state) => state.getVerify);
   const isVerified = getVerify();
-  console.log(isVerified)
+  const { getCredit } = useTransactions();
+  const [creditInfo, setCreditInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchCreditInfo = async () => {
+      const creditData = await getCredit();
+      setCreditInfo(creditData);
+    };
+    fetchCreditInfo();
+  }, []);
 
   if (!isVerified) {
     return (
@@ -33,6 +43,9 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <BalanceCard />
+      </div>
+      <div>
+        {creditInfo && <CreditInfo data={creditInfo} />}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

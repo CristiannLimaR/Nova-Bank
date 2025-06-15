@@ -5,28 +5,6 @@ const apiClient = axios.create({
   baseURL: "http://localhost:3000/bankSystem/v1",
   timeout: 5000,
 });
-
-export const login = async (data) => {
-  try {
-    const response = await apiClient.post("/auth/login", data);
-    const { token, user } = response.data;
-
-    useAuthStore.getState().login(user, token);
-
-    return {
-      data: {
-        token,
-        user,
-      },
-    };
-  } catch (e) {
-    return {
-      error: true,
-      e,
-    };
-  }
-};
-
 apiClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().getToken();
@@ -53,6 +31,32 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export default apiClient;
+
+// Iniciar sesión
+export const login = async (data) => {
+  try {
+    const response = await apiClient.post("/auth/login", data);
+    const { token, user } = response.data;
+
+    useAuthStore.getState().login(user, token);
+
+    return {
+      data: {
+        token,
+        user,
+      },
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+
 
 export const register = async (data) => {
   try {
@@ -171,3 +175,50 @@ export const updatePassword = async (data) => {
   }
 };
 
+export const getTransactionsByAccountId = async (accountId) => {
+  try {
+    return await apiClient.get(`/transaction/account/${accountId}`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getChartData = async (accountId) => {
+  try {
+    return await apiClient.get(`/transaction/chart/${accountId}`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getCredit = async () => {
+  try {
+    return await apiClient.get(`/transaction/credit`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const addContact = async (data) => {
+  try {
+    return await apiClient.post("/user/favorite", data);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getAllAccounts = async () => {
+  try {
+    return await apiClient.get("/account");
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const verifyAccount = async (accountId, data) => {
+  try {
+    return await apiClient.patch(`/account/${accountId}`,data);
+  } catch (e) {
+    return { error: true, e };
+  }
+};

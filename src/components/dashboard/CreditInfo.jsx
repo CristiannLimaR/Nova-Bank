@@ -1,14 +1,23 @@
 import React from 'react';
 import { CreditCard, AlertCircle } from 'lucide-react';
 
-const CreditInfo = () => {
+const CreditInfo = ({ data }) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   // Estos valores deberían venir de tu estado global o API
   const creditInfo = {
-    availableCredit: 5000.00,
-    usedCredit: 2500.00,
-    creditLimit: 10000.00,
-    nextPayment: '2024-04-15',
-    minimumPayment: 250.00
+    availableCredit: data.availableCredit,
+    usedCredit: data.availableCredit - data.creditLimit,
+    creditLimit: data.creditLimit,
+    nextPayment: formatDate(data.dateOfPayment),
+    minimumPayment: data.payment
   };
 
   const creditUsagePercentage = (creditInfo.usedCredit / creditInfo.creditLimit) * 100;

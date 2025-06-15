@@ -104,10 +104,16 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    contain: layout style paint;
   }
 
   .animate-in {
     animation: animateIn 0.3s ease forwards;
+    will-change: transform, opacity;
+    contain: layout style paint;
   }
 
   @keyframes animateIn {
@@ -123,6 +129,22 @@
 
   .card-gradient {
     background: linear-gradient(135deg, #ff9d80 0%, #ff7e5f 100%);
+    will-change: background;
+    contain: layout style paint;
+  }
+
+  .main-container {
+    contain: layout style paint;
+    content-visibility: auto;
+  }
+
+  img {
+    content-visibility: auto;
+    contain: layout style paint;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    contain: layout style;
   }
 }
 
