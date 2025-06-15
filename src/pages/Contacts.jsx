@@ -15,19 +15,15 @@ import {
 } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
+import useUsers from '../shared/hooks/useUsers';
 
 const Contacts = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const updateUser = useAuthStore((state) => state.updateUser);
   const { searchAccount } = useAccount();
   const contacts = user.favorites || [];
+  const { addContact } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContact, setSelectedContact] = useState(contacts[0]);
   const [transferAmount, setTransferAmount] = useState('');
@@ -78,17 +74,24 @@ const Contacts = () => {
     }
 
     try {
-      // Aquí iría la llamada a la API para agregar el contacto
-      console.log('Nuevo contacto:', { ...newContact, foundUser });
-      setIsAddContactModalOpen(false);
-      setNewContact({
-        accountNo: '',
-        alias: ''
+      const response = await addContact({
+        accountNo: newContact.accountNo,
+        alias: newContact.alias,
       });
-      setFoundUser(null);
-      toast.success("Contacto agregado", {
-        description: "El contacto se ha agregado correctamente",
-      });
+      
+      if (response) {
+        updateUser({
+          ...user,
+          favorites: [...(user.favorites || []), response]
+        });
+        
+        setIsAddContactModalOpen(false);
+        setNewContact({
+          accountNo: '',
+          alias: ''
+        });
+        setFoundUser(null);
+      }
     } catch (error) {
       console.error('Error al agregar contacto:', error);
       toast.error("Error", {

@@ -222,3 +222,5 @@ export const verifyAccount = async (accountId, data) => {
     return { error: true, e };
   }
 };
+
+
