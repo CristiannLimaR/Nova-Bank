@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Eye } from 'lucide-react';
 import {
   Dialog,
@@ -6,54 +6,71 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import UserForm from '@/components/forms/UserForm';
+import useUsers from "@/shared/hooks/useUsers";
+
 
 const UsersPage = () => {
-  const [users, setUsers] = useState([
-    {
-      _id: "6844446cf43bdae67e078546",
-      name: "Cristian Lima",
-      username: "CristiannLima",
-      dpi: 3875205380101,
-      address: "6ta calle 19-63 sector 7 alamedas de santa clara zona 3, Villa Nueva",
-      phone: 51380497,
-      email: "cristiannlima2@gmail.com",
-      role: "USER_ROLE",
-      monthlyIncome: 100,
-      status: true
-    }
-  ]);
-
+  const [users, setUsers] = useState([]);
+  const { fetchUsers, loading, addUser, editUser } = useUsers();
   const [editingUser, setEditingUser] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  
 
   const handleEdit = (user) => {
     setEditingUser({ ...user });
+    setIsCreating(false);
   };
 
-  const handleSave = () => {
-    setUsers(users.map(user => 
-      user._id === editingUser._id ? editingUser : user
-    ));
+  const fetchUsersData = async () => {
+    const users = await fetchUsers();
+    setUsers(users);
+  };
+
+  useEffect(() => {
+    
+    fetchUsersData();
+  }, []);
+
+  const handleCreate = () => {
+    setEditingUser({
+      name: "",
+      username: "",
+      password: "",
+      dpi: "",
+      address: "",
+      phone: "",
+      email: "",
+      role: "USER_ROLE",
+      monthlyIncome: 0,
+      status: true,
+      accountType: ""
+    });
+    setIsCreating(true);
+  };
+
+  const handleSave = (data) => {
+    console.log('Datos del usuario:', data);
+    if(isCreating){
+      console.log('creando', data) //funcion de hook para agregar
+      addUser(data);
+      fetchUsersData();
+    }else{
+      console.log('editando', data) // funcion de hook para editar id
+      editUser(data._id, data);
+      fetchUsersData();
+    }
     setEditingUser(null);
+    setIsCreating(false);
   };
 
-  const roles = [
-    { value: "USER_ROLE", label: "Usuario" },
-    { value: "ADMIN_ROLE", label: "Administrador" }
-  ];
+  const handleCancel = () => {
+    setEditingUser(null);
+    setIsCreating(false);
+  };
 
   const UserDetails = ({ user }) => {
     return (
@@ -100,124 +117,37 @@ const UsersPage = () => {
     );
   };
 
-  const EditUserForm = ({ user, onSave, onCancel }) => {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nombre</Label>
-            <Input
-              id="name"
-              value={user.name}
-              onChange={(e) => setEditingUser({ ...user, name: e.target.value })}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="username">Usuario</Label>
-            <Input
-              id="username"
-              value={user.username}
-              onChange={(e) => setEditingUser({ ...user, username: e.target.value })}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Teléfono</Label>
-            <Input
-              id="phone"
-              type="number"
-              value={user.phone}
-              onChange={(e) => setEditingUser({ ...user, phone: parseInt(e.target.value) })}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={user.email}
-              onChange={(e) => setEditingUser({ ...user, email: e.target.value })}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Rol</Label>
-            <Select
-              value={user.role}
-              onValueChange={(value) => setEditingUser({ ...user, role: value })}
-            >
-              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                <SelectValue placeholder="Selecciona un rol" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                {roles.map((role) => (
-                  <SelectItem 
-                    key={role.value} 
-                    value={role.value}
-                    className="text-white hover:bg-gray-700"
-                  >
-                    {role.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="monthlyIncome">Ingreso Mensual</Label>
-            <Input
-              id="monthlyIncome"
-              type="number"
-              value={user.monthlyIncome}
-              onChange={(e) => setEditingUser({ ...user, monthlyIncome: parseFloat(e.target.value) })}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="address">Dirección</Label>
-          <Input
-            id="address"
-            value={user.address}
-            onChange={(e) => setEditingUser({ ...user, address: e.target.value })}
-            className="bg-gray-700 border-gray-600 text-white"
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="status"
-            checked={user.status}
-            onCheckedChange={(checked) => setEditingUser({ ...user, status: checked })}
-            className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-          />
-          <Label htmlFor="status">Estado Activo</Label>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button 
-              variant="destructive" 
-              className="mr-2"
-            >
-              Cancelar
-            </Button>
-          </DialogClose>
-          <Button onClick={onSave}>
-            Guardar Cambios
-          </Button>
-        </DialogFooter>
-      </div>
-    );
-  };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Gestión de Usuarios</h1>
-        <Button className="text-white px-4 py-2 rounded-lg flex items-center">
-          <Plus className="w-5 h-5 mr-2" />
-          Nuevo Usuario
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button 
+              className="text-white px-4 py-2 rounded-lg flex items-center"
+              onClick={handleCreate}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Nuevo Usuario
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-gray-800 text-white border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">
+                {isCreating ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
+              </DialogTitle>
+            </DialogHeader>
+            {editingUser && (
+              <UserForm
+                user={editingUser}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                setEditingUser={setEditingUser}
+                isCreating={isCreating}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Barra de búsqueda */}
@@ -256,8 +186,12 @@ const UsersPage = () => {
                 Estado
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Rol
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Acciones
               </th>
+              
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -282,6 +216,9 @@ const UsersPage = () => {
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                     {user.status ? 'Activo' : 'Inactivo'}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <Badge className={`${user.role === 'ADMIN_ROLE' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'}`}	>{user.role}</Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Dialog>
@@ -311,10 +248,12 @@ const UsersPage = () => {
                         <DialogTitle className="text-xl font-bold">Editar Usuario</DialogTitle>
                       </DialogHeader>
                       {editingUser && (
-                        <EditUserForm
+                        <UserForm
                           user={editingUser}
                           onSave={handleSave}
-                          onCancel={() => setEditingUser(null)}
+                          onCancel={handleCancel}
+                          setEditingUser={setEditingUser}
+                          isCreating={isCreating}
                         />
                       )}
                     </DialogContent>

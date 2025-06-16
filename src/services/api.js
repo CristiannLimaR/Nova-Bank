@@ -117,6 +117,17 @@ export const forgotPassword = async (data) => {
   }
 };
 
+export const createUser = async (data) => {
+  try {
+    return await apiClient.post("/auth/register", data);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
 export const convertirBalancePorMoneda = async (accountNo, moneda) => {
   try {
     return await apiClient.get(`/balance/${accountNo}/${moneda}`);
@@ -127,6 +138,7 @@ export const convertirBalancePorMoneda = async (accountNo, moneda) => {
     };
   }
 };
+
 
 export const updateUser = async (userId, data) => {
   try {
@@ -140,6 +152,14 @@ export const updateUser = async (userId, data) => {
       error: true,
       e: e.response ? e.response.data : e.message,
     };
+  }
+};
+
+export const getUsers = async () => {
+  try {
+    return await apiClient.get("/user");
+  } catch (e) {
+    return { error: true, e };
   }
 };
 

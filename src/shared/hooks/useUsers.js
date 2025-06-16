@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { addContact as addContactRequest } from "../../services/api";
+import { addContact as addContactRequest, createUser, updateUser, getUsers } from "../../services/api";
 import { toast } from "sonner";
 const useUsers = () => {
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const addContact = async (data) => {
@@ -15,9 +14,49 @@ const useUsers = () => {
     toast.success("Contacto agregado");
     return response.data;
   };
+  
+  const addUser = async (userData) => {
+    setLoading(true);
+    const response = await createUser(userData);
+    if (response.error) {
+      toast.error(response.e.response.data.msg);
+      return
+    }
+    toast.success("Usuario creado");
+    setLoading(false);
+    return response;
+  };
+
+  const editUser = async (id, userData) => {
+    setLoading(true);
+    const response = await updateUser(id, userData);
+    if (response.error) {
+      toast.error(response.e.response.data.msg);
+      return
+    }
+    toast.success("Usuario editado");
+    setLoading(false);
+    return response;
+  };
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const response = await getUsers();
+    if (response.error) {
+      toast.error(response.e.response.data.msg);
+      return
+    }
+    console.log('response', response.data.users);
+    setLoading(false);
+    return response.data.users;
+  };
 
   return {
     addContact,
+    addUser,
+    editUser,
+    fetchUsers,
+    loading,
   };
 };
 
