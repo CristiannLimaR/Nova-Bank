@@ -97,3 +97,56 @@ export const verify2FA = async (data) => {
   }
 };
 
+// PRODUCTS
+export const getProducts = async (data) => {
+  try{
+    return await apilclient.get('/products/', data)
+  }catch(e){
+
+  }
+}
+
+export const searchProduct = async (id) => {
+  try {
+    return await apiClient.get(`/products/search/${id}`)
+  } catch (e) {
+    return {
+        error: true,
+        e,
+      }
+  }
+}
+
+export const createProduct = async (data) => {
+  try {
+    return await apiClient.post('/products/products', data)
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    }
+  }
+}
+
+export const updateProduct = async (id,data) => {
+  try {
+    return await apiClient.put(`/products/update/${id}`, data)
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    }
+  }
+}
+
+export const deleteProduct = async (id) => {
+  try {
+    return await apiClient.delete(`/products/delete/${id}`)
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    }
+  }
+}
+
