@@ -244,3 +244,10 @@ export const verifyAccount = async (accountId, data) => {
 };
 
 
+export const verifyExistUser = async (data) => {
+  try {
+    return await apiClient.post(`/user/exists`, data);
+  } catch (e) {
+    return { error: true, e };
+  }
+};

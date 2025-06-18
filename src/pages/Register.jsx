@@ -12,10 +12,11 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Button } from "../components/ui/Button";
 import { useRegister } from "../shared/hooks/useRegister";
-
+import { useValidations } from "../shared/hooks/useValidations";
 const Register = () => {
   const navigate = useNavigate();
   const { registerUser } = useRegister();
+  const { validateExistUser } = useValidations();
   const {
     register,
     handleSubmit,
@@ -179,6 +180,12 @@ const Register = () => {
                       value: 13,
                       message: "El DPI debe tener 13 dígitos",
                     },
+                    validate: {
+                      validateDPI: async (value) => {
+                        const isExist = await validateExistUser({dpi: value});
+                        return isExist ? "El DPI ya está en uso" : true;
+                      },
+                    },
                   })}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="1234567891"
@@ -273,6 +280,12 @@ const Register = () => {
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                       message: "Correo electrónico inválido",
+                    },
+                    validate: {
+                      validateEmail: async (value) => {
+                        const isExist = await validateExistUser({email: value});
+                        return isExist ? "El correo electrónico ya está en uso" : true;
+                      },
                     },
                   })}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
