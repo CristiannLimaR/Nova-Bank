@@ -10,7 +10,6 @@ import {
 import { toast } from "sonner";
 
 export const useProducts = () => {
-    const toast = useToast()
       const [loading, setLoading] = useState(false);
 
     const getProducts = async () => {
@@ -27,6 +26,7 @@ export const useProducts = () => {
         }
 
         setLoading(false);
+        console.log(response.data)
         return response.data;
     }
 
@@ -97,6 +97,16 @@ export const useProducts = () => {
         setLoading(false);
         return response.data;
     };
+
+    // Retorno de las functions
+    return {
+        getProducts,
+        searchProduct,
+        createProduct,
+        updateProduct,
+        deleteProduct,
+        loading
+    }
 }
 
 export default useProducts;
