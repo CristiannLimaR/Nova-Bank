@@ -195,6 +195,29 @@ export const updatePassword = async (data) => {
   }
 };
 
+
+export const getProducts = async () => {
+  try {
+    return await apiClient.get("/products");
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const searchProduct = async (id) => {
+  try {
+    return await apiClient.get(`/products/search/${id}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
 export const getTransactionsByAccountId = async (accountId) => {
   try {
     return await apiClient.get(`/transaction/account/${accountId}`);
@@ -249,5 +272,46 @@ export const verifyExistUser = async (data) => {
     return await apiClient.post(`/user/exists`, data);
   } catch (e) {
     return { error: true, e };
+  }
+};
+
+export const createProduct = async (formData) => {
+  try {
+    return await apiClient.post("/products/save", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const updateProduct = async (id, formData) => {
+  try {
+    return await apiClient.put(`/products/update/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const deleteProduct = async (id) => {
+  try {
+    return await apiClient.delete(`/products/delete/${id}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
   }
 };

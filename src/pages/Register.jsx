@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Button } from "../components/ui/Button";
 import { useRegister } from "../shared/hooks/useRegister";
-import { useValidations } from "../shared/hooks/useValidations";
+import useValidations from "../shared/hooks/useValidations";
 const Register = () => {
   const navigate = useNavigate();
   const { registerUser } = useRegister();
