@@ -315,3 +315,85 @@ export const deleteProduct = async (id) => {
     };
   }
 };
+
+// ===== FUNCIONES DE ESTADÍSTICAS =====
+
+
+export const getDailySummary = async () => {
+  try {
+    return await apiClient.get("/stats/daily-summary");
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+// Obtener datos para gráficos
+export const getStatsChartData = async (timeRange = '7d') => {
+  try {
+    return await apiClient.get(`/stats/chart-data?timeRange=${timeRange}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+// Obtener cuentas principales
+export const getTopAccounts = async (limit = 10) => {
+  try {
+    return await apiClient.get(`/stats/top-accounts?limit=${limit}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+// Obtener transacciones recientes
+export const getRecentTransactions = async (limit = 20, type = null) => {
+  try {
+    let endpoint = `/stats/recent-transactions?limit=${limit}`;
+    if (type) {
+      endpoint += `&type=${type}`;
+    }
+    return await apiClient.get(endpoint);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+// Obtener estadísticas del sistema
+export const getSystemStats = async () => {
+  try {
+    return await apiClient.get("/stats/system-stats");
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const getActiveProductsCount = async () => {
+  try {
+    return await apiClient.get("/products/active-count");
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getMonthlyTransactionCounts = async () => {
+  try {
+    return await apiClient.get('/stats/monthly-transaction-counts');
+  } catch (e) {
+    return { error: true, e };
+  }
+};
