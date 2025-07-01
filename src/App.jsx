@@ -22,6 +22,8 @@ import UsersPage from "./pages/admin/UsersPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import ProductsPage from "./pages/admin/ProductsPage";
 import TransactionsPage from "./pages/admin/TransactionsPage";
+import NewDeposit from "./pages/admin/NewDeposit";
+import NewAmount from "./pages/admin/NewAmount";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 
@@ -49,6 +51,8 @@ function App() {
           <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ReportsPage /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><ProductsPage /></ProtectedRoute>} />
           <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><TransactionsPage /></ProtectedRoute>} />
+          <Route path="/admin/transactions/new" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><NewDeposit/></ProtectedRoute>} />
+          <Route path="/admin/transactions/edit/:id" element={<ProtectedRoute allowedRoles={['ADMIN_ROLE']}><NewAmount/></ProtectedRoute>} />
         </Route>
       </Routes>
       <Toaster />

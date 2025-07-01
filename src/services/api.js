@@ -97,3 +97,86 @@ export const verify2FA = async (data) => {
   }
 };
 
+export const getTransactions  = async (accountId) => {
+  try {
+    const res = await apiClient.get(`/transaction/account/${accountId}`);
+    return {
+      data: res.data,
+    };      
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const createTransaction = async (data) => {
+  try {
+    const res = await apiClient.post("/transaction/", data);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+}
+
+export const createDeposit = async (data) => {
+  try {
+    const res = await apiClient.post("/transaction/deposit", data);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const getAllTransactions = async () => {
+  try {
+    const res = await apiClient.get(`/transaction/`);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const cancelTransaction = async (transactionId) => {
+  try {
+    const res = await apiClient.delete(`/transaction/${transactionId}`);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+}
+
+export const updateTransaction = async (transactionId, data) => {
+  try {
+    const res = await apiClient.put(`/transaction/${transactionId}`, data);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
