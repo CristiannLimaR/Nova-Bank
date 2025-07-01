@@ -18,7 +18,8 @@ const useTransactions = () => {
           return; // No dispares aún la carga
         }
 
-        const response = await getTransactionsByAccountIdRequest(account._id);
+        const response = await getTransactionsByAccountIdRequest(account.accountNo);
+        console.log(response.data.transactions);
         setTransactions(response.data.transactions || []);
       } catch (err) {
         console.error("Error al cargar transacciones:", err);
