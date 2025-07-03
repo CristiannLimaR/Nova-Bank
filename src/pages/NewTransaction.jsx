@@ -3,11 +3,12 @@ import { ArrowLeft, Search, Download, CheckCircle2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { date, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useAccountStore from "../shared/stores/AccountStore";
+import useAccountStore from "../shared/stores/accountStore";
 import useAccount from "../shared/hooks/useAccount";
 import { toast } from "sonner";
+import useTransactions from "../shared/hooks/useTransactions";
 
 const transactionSchema = z.object({
   destinationAccount: z
@@ -28,6 +29,7 @@ const transactionSchema = z.object({
 });
 
 const NewTransaction = () => {
+  const { createTransaction } = useTransactions();
   const navigate = useNavigate();
   const location = useLocation();
   const account = useAccountStore((state) => state.account);
@@ -145,18 +147,33 @@ const NewTransaction = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmTransaction = () => {
+  const handleConfirmTransaction = async () => {
     const formData = watch();
-    const transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      date: new Date().toLocaleString(),
-      fromAccount: account.accountNo,
-      toAccount: formData.destinationAccount,
-      toName: foundUser.name,
-      amount: formData.amount,
-      comment: formData.comment,
-      status: "Completada"
+    const transactionPayload = {
+      accountNo: parseFloat(formData.destinationAccount),
+      amount: parseFloat(formData.amount),
+      description: formData.comment || "",
+      twoFactorCode: parseFloat(formData.twoFactorCode),
+      type: "TRANSFER",
     };
+
+    const response = await createTransaction(transactionPayload);
+
+    if (response.error) {
+      toast.error("Error al realizar la transferencia", {
+        description: response.error.message || "Ocurrió un error inesperado",
+      });
+      return;
+    }
+
+    const transaction = {
+      ...transactionPayload,
+      fromAccount: account.accountNo,
+      toName: foundUser.name,
+      date: new Date().toLocaleDateString(),
+      id: response.data.transaction._id || "N/A",
+      status: response.data.transaction.status ? "Completed" : "Failed",
+    }
     
     setTransactionData(transaction);
     setShowConfirmation(false);
@@ -171,12 +188,12 @@ const NewTransaction = () => {
       ID de Transacción: ${transactionData.id}
       
       Cuenta Origen: ${transactionData.fromAccount}
-      Cuenta Destino: ${transactionData.toAccount}
+      Cuenta Destino: ${transactionData.accountNo}
       Beneficiario: ${transactionData.toName}
       
       Monto: Q${transactionData.amount}
       Estado: ${transactionData.status}
-      ${transactionData.comment ? `Comentario: ${transactionData.comment}` : ''}
+      ${transactionData.description ? `Comentario: ${transactionData.description}` : ''}
     `;
 
     const blob = new Blob([receiptContent], { type: 'text/plain' });
@@ -222,7 +239,7 @@ const NewTransaction = () => {
 
           <div className="flex justify-between items-center border-b border-gray-700 pb-4">
             <span className="text-gray-400">Cuenta Destino</span>
-            <span className="text-white">{transactionData.toAccount}</span>
+            <span className="text-white">{transactionData.accountNo}</span>
           </div>
 
           <div className="flex justify-between items-center border-b border-gray-700 pb-4">

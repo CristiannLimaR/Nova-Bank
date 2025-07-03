@@ -2,8 +2,21 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '../components/ui/Button';
 import useLogin from '../shared/hooks/useLogin';
+
+// Esquema de validación para el formulario de login
+const loginSchema = z.object({
+  identifier: z.string()
+    .min(3, 'Debe tener al menos 3 caracteres')
+    .max(100, 'El identificador no puede exceder 100 caracteres'),
+  password: z.string()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres')
+    .max(100, 'La contraseña no puede exceder 100 caracteres'),
+  rememberMe: z.boolean().optional(),
+});
   
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,9 +25,11 @@ const Login = () => {
   const location = useLocation();
   const { login } = useLogin()
   const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: '',
-      password: ''
+      password: '',
+      rememberMe: false,
     }
   });
 
@@ -70,13 +85,7 @@ const Login = () => {
                   id="identifier"
                   type="text"
                   autoComplete="username"
-                  {...register('identifier', {
-                    required: 'El email o nombre de usuario es requerido',
-                    minLength: {
-                      value: 3,
-                      message: 'Debe tener al menos 3 caracteres'
-                    }
-                  })}
+                  {...register('identifier')}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="email@ejemplo.com o usuario"
                 />
@@ -98,13 +107,7 @@ const Login = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  {...register('password', {
-                    required: 'La contraseña es requerida',
-                    minLength: {
-                      value: 6,
-                      message: 'La contraseña debe tener al menos 6 caracteres'
-                    }
-                  })}
+                  {...register('password')}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-10 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="••••••••"
                 />

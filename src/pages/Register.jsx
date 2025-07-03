@@ -10,9 +10,52 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "../components/ui/Button";
 import { useRegister } from "../shared/hooks/useRegister";
 import useValidations from "../shared/hooks/useValidations";
+
+// Esquema de validación para el formulario de registro
+const registerSchema = z.object({
+  name: z.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(100, 'El nombre no puede exceder 100 caracteres'),
+  username: z.string()
+    .min(4, 'El nombre de usuario debe tener al menos 4 caracteres')
+    .max(50, 'El nombre de usuario no puede exceder 50 caracteres')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Solo se permiten letras, números y guiones bajos'),
+  dpi: z.string()
+    .length(13, 'El DPI debe tener exactamente 13 dígitos')
+    .regex(/^\d+$/, 'El DPI solo debe contener números'),
+  address: z.string()
+    .min(5, 'La dirección debe tener al menos 5 caracteres')
+    .max(200, 'La dirección no puede exceder 200 caracteres'),
+  phone: z.string()
+    .min(8, 'El teléfono debe tener al menos 8 dígitos')
+    .max(15, 'El teléfono no puede exceder 15 dígitos')
+    .regex(/^\d+$/, 'El teléfono solo debe contener números'),
+  email: z.string()
+    .email('Formato de email inválido')
+    .min(1, 'El email es requerido')
+    .max(100, 'El email no puede exceder 100 caracteres'),
+  password: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/, 'La contraseña debe contener al menos una mayúscula, una minúscula y un número'),
+  confirmPassword: z.string()
+    .min(1, 'Por favor confirma tu contraseña'),
+  work: z.string()
+    .min(2, 'El trabajo debe tener al menos 2 caracteres')
+    .max(100, 'El trabajo no puede exceder 100 caracteres'),
+  monthlyIncome: z.string()
+    .min(1, 'El ingreso mensual es requerido')
+    .regex(/^\d+(\.\d{1,2})?$/, 'El ingreso mensual debe ser un número válido')
+    .refine((val) => parseFloat(val) > 100, 'El ingreso mensual debe ser mayor a 100'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+});
+
 const Register = () => {
   const navigate = useNavigate();
   const { registerUser } = useRegister();
@@ -22,7 +65,10 @@ const Register = () => {
     handleSubmit,
     formState: { errors, isValid },
     watch,
+    setError,
+    clearErrors,
   } = useForm({
+    resolver: zodResolver(registerSchema),
     mode: "onBlur",
     defaultValues: {
       name: "",
@@ -39,30 +85,73 @@ const Register = () => {
   });
 
   const password = watch("password");
+  const email = watch("email");
+  const dpi = watch("dpi");
 
-  const passwordValidation = {
-    required: "La contraseña es requerida",
-    minLength: {
-      value: 8,
-      message: "La contraseña debe tener al menos 8 caracteres",
-    },
-    pattern: {
-      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/,
-      message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número",
-    },
-  };
+  // Debounce utilitario
+  function debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn(...args);
+      }, delay);
+    };
+  }
 
-  const confirmPasswordValidation = {
-    required: "Por favor confirma tu contraseña",
-    validate: {
-      matchesPassword: (value) =>
-        value === password || "Las contraseñas no coinciden",
-    },
-  };
+  const debouncedValidateEmail = React.useRef();
+  const debouncedValidateDPI = React.useRef();
+
+  React.useEffect(() => {
+    debouncedValidateEmail.current = debounce(async (emailValue) => {
+      if (emailValue && emailValue.includes('@')) {
+        const exists = await validateExistUser({ email: emailValue });
+        if (exists.exists) {
+          setError("email", {
+            type: "manual",
+            message: "El email ya está en uso"
+          });
+        } else {
+          clearErrors("email");
+        }
+      }
+    }, 500);
+  }, [validateExistUser, setError, clearErrors]);
+
+  React.useEffect(() => {
+    debouncedValidateDPI.current = debounce(async (dpiValue) => {
+      if (dpiValue && dpiValue.length === 13) {
+        const exists = await validateExistUser({ dpi: dpiValue });
+        if (exists.exists) {
+          setError("dpi", {
+            type: "manual",
+            message: "El DPI ya está en uso"
+          });
+        } else {
+          clearErrors("dpi");
+        }
+      }
+    }, 500);
+  }, [validateExistUser, setError, clearErrors]);
+
+  React.useEffect(() => {
+    if (debouncedValidateEmail.current) {
+      debouncedValidateEmail.current(email);
+    }
+  }, [email]);
+
+  React.useEffect(() => {
+    if (debouncedValidateDPI.current) {
+      debouncedValidateDPI.current(dpi);
+    }
+  }, [dpi]);
 
   const onSubmit = async (data) => {
     registerUser(data)
   };
+
+  // Para depuración
+  console.log(errors);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 py-12 sm:px-6 lg:px-8">
@@ -106,13 +195,7 @@ const Register = () => {
                 </div>
                 <input
                   id="name"
-                  {...register("name", {
-                    required: "El nombre es requerido",
-                    minLength: {
-                      value: 3,
-                      message: "El nombre debe tener al menos 3 caracteres",
-                    },
-                  })}
+                  {...register("name")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="Juan Pérez"
                 />
@@ -137,14 +220,7 @@ const Register = () => {
                 </div>
                 <input
                   id="username"
-                  {...register("username", {
-                    required: "El nombre de usuario es requerido",
-                    minLength: {
-                      value: 4,
-                      message:
-                        "El nombre de usuario debe tener al menos 4 caracteres",
-                    },
-                  })}
+                  {...register("username")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="juanperez"
                 />
@@ -170,23 +246,7 @@ const Register = () => {
                 <input
                   id="dpi"
                   type="number"
-                  {...register("dpi", {
-                    required: "El DPI es requerido",
-                    minLength: {
-                      value: 13,
-                      message: "El DPI debe tener 13 dígitos",
-                    },
-                    maxLength: {
-                      value: 13,
-                      message: "El DPI debe tener 13 dígitos",
-                    },
-                    validate: {
-                      validateDPI: async (value) => {
-                        const isExist = await validateExistUser({dpi: value});
-                        return isExist ? "El DPI ya está en uso" : true;
-                      },
-                    },
-                  })}
+                  {...register("dpi")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="1234567891"
                 />
@@ -211,13 +271,7 @@ const Register = () => {
                 </div>
                 <input
                   id="address"
-                  {...register("address", {
-                    required: "La dirección es requerida",
-                    minLength: {
-                      value: 5,
-                      message: "La dirección debe tener al menos 5 caracteres",
-                    },
-                  })}
+                  {...register("address")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="Dirección completa"
                 />
@@ -243,13 +297,7 @@ const Register = () => {
                 <input
                   id="phone"
                   type="tel"
-                  {...register("phone", {
-                    required: "El teléfono es requerido",
-                    pattern: {
-                      value: /^[0-9]{8}$/,
-                      message: "El teléfono debe tener 8 dígitos",
-                    },
-                  })}
+                  {...register("phone")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="12345678"
                 />
@@ -275,19 +323,7 @@ const Register = () => {
                 <input
                   id="email"
                   type="email"
-                  {...register("email", {
-                    required: "El correo electrónico es requerido",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Correo electrónico inválido",
-                    },
-                    validate: {
-                      validateEmail: async (value) => {
-                        const isExist = await validateExistUser({email: value});
-                        return isExist ? "El correo electrónico ya está en uso" : true;
-                      },
-                    },
-                  })}
+                  {...register("email")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="tu@email.com"
                 />
@@ -313,7 +349,7 @@ const Register = () => {
                 <input
                   id="password"
                   type="password"
-                  {...register("password", passwordValidation)}
+                  {...register("password")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="••••••••"
                 />
@@ -339,7 +375,7 @@ const Register = () => {
                 <input
                   id="confirmPassword"
                   type="password"
-                  {...register("confirmPassword", confirmPasswordValidation)}
+                  {...register("confirmPassword")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="••••••••"
                 />
@@ -364,9 +400,7 @@ const Register = () => {
                 </div>
                 <input
                   id="work"
-                  {...register("work", {
-                    required: "La ocupación es requerida",
-                  })}
+                  {...register("work")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="Desarrollador"
                 />
@@ -392,13 +426,7 @@ const Register = () => {
                 <input
                   id="monthlyIncome"
                   type="number"
-                  {...register("monthlyIncome", {
-                    required: "El ingreso mensual es requerido",
-                    min: {
-                      value: 100,
-                      message: "Debes tener un minimo de Q100 de ingreso",
-                    },
-                  })}
+                  {...register("monthlyIncome")}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="5000"
                 />

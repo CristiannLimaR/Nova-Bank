@@ -1,5 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
-import { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -14,6 +16,50 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter, DialogClose } from "@/components/ui/dialog";
 import useValidations from "@/shared/hooks/useValidations";
 
+// Esquema de validación para el formulario de usuario
+const userSchema = z.object({
+  name: z.string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(100, 'El nombre no puede exceder 100 caracteres'),
+  username: z.string()
+    .min(3, 'El usuario debe tener al menos 3 caracteres')
+    .max(50, 'El usuario no puede exceder 50 caracteres')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Solo se permiten letras, números y guiones bajos'),
+  password: z.string()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres')
+    .max(100, 'La contraseña no puede exceder 100 caracteres')
+    .optional(),
+  dpi: z.string()
+    .length(13, 'El DPI debe tener exactamente 13 dígitos')
+    .regex(/^\d+$/, 'El DPI solo debe contener números'),
+  email: z.string()
+    .email('Formato de email inválido')
+    .min(1, 'El email es requerido')
+    .max(100, 'El email no puede exceder 100 caracteres'),
+  phone: z.string()
+    .min(8, 'El teléfono debe tener al menos 8 dígitos')
+    .max(15, 'El teléfono no puede exceder 15 dígitos')
+    .regex(/^\d+$/, 'El teléfono solo debe contener números')
+    .optional()
+    .or(z.literal('')),
+  accountType: z.enum(['SAVINGS', 'CHECKING'], {
+    required_error: 'Debe seleccionar un tipo de cuenta',
+  }),
+  monthlyIncome: z.string()
+    .min(1, 'El ingreso mensual es requerido')
+    .regex(/^\d+(\.\d{1,2})?$/, 'El ingreso mensual debe ser un número válido')
+    .refine((val) => parseFloat(val) > 100, 'El ingreso mensual debe ser mayor a 100')
+    .optional()
+    .or(z.literal('')),
+  role: z.enum(['USER_ROLE', 'ADMIN_ROLE'], {
+    required_error: 'Debe seleccionar un rol',
+  }),
+  address: z.string()
+    .min(5, 'La dirección debe tener al menos 5 caracteres')
+    .max(200, 'La dirección no puede exceder 200 caracteres'),
+  status: z.boolean(),
+});
+
 const roles = [
   { value: "USER_ROLE", label: "Usuario" },
   { value: "ADMIN_ROLE", label: "Administrador" },
@@ -24,8 +70,19 @@ const accountTypes = [
   { value: "CHECKING", label: "Cuenta Corriente" },
 ];
 
+// Debounce utilitario
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
 const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
-  const { validateExistUser, loading } = useValidations();
+  const { validateExistUser, isLoading } = useValidations();
   
   const {
     control,
@@ -34,8 +91,10 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
     reset,
     watch,
     setValue,
-    trigger,
+    setError,
+    clearErrors,
   } = useForm({
+    resolver: zodResolver(userSchema),
     defaultValues: {
       name: "",
       username: "",
@@ -55,6 +114,41 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
   const email = watch("email");
   const dpi = watch("dpi");
 
+  // Validación en onBlur para email
+  const handleEmailBlur = async (e) => {
+    const value = e.target.value;
+    if (value && value.includes('@')) {
+      if (!isCreating && user?.email === value) {
+        return;
+      }
+      const exists = await validateExistUser({ email: value });
+      if (exists.exists) {
+        setError("email", {
+          type: "manual",
+          message: "El email ya está en uso"
+        });
+      } else {
+        clearErrors("email");
+      }
+    }
+  };
+
+  // Validación en onBlur para DPI
+  const handleDpiBlur = async (e) => {
+    const value = e.target.value;
+    if (value && value.length === 13) {
+      const exists = await validateExistUser({ dpi: value });
+      if (exists.exists) {
+        setError("dpi", {
+          type: "manual",
+          message: "El DPI ya está en uso"
+        });
+      } else {
+        clearErrors("dpi");
+      }
+    }
+  };
+
   useEffect(() => {
     if (user) {
       reset({
@@ -73,43 +167,6 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
     }
   }, [user, reset]);
 
-  useEffect(() => {
-    const validateEmail = async () => {
-      if (email && email.includes('@')) {
-        if (!isCreating && user?.email === email) {
-          return;
-        }
-        const exists = await validateExistUser({email: email});
-        if (exists.exists) {
-          setValue("email", email, { 
-            shouldValidate: true,
-            shouldDirty: true,
-            shouldTouch: true
-          });
-        }
-      }
-    };
-
-    validateEmail();
-  }, [email, user, isCreating]);
-
-  useEffect(() => {
-    const validateDPI = async () => {
-      if (dpi && dpi.length === 13) {
-        const exists = await validateExistUser({dpi: dpi});
-        if (exists.exists) {
-          setValue("dpi", dpi, { 
-            shouldValidate: true,
-            shouldDirty: true,
-            shouldTouch: true
-          });
-        }
-      }
-    };
-
-    validateDPI();
-  }, [dpi]);
-
   const onSubmit = (data) => {
     const formattedData = {
       ...data,
@@ -124,6 +181,9 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
     onCancel();
   };
 
+  // Para depuración
+  console.log(errors);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -133,13 +193,6 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
           <Controller
             name="name"
             control={control}
-            rules={{
-              required: "El nombre es requerido",
-              minLength: {
-                value: 2,
-                message: "El nombre debe tener al menos 2 caracteres",
-              },
-            }}
             render={({ field }) => (
               <Input
                 {...field}
@@ -159,17 +212,6 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
           <Controller
             name="username"
             control={control}
-            rules={{
-              required: "El usuario es requerido",
-              minLength: {
-                value: 3,
-                message: "El usuario debe tener al menos 3 caracteres",
-              },
-              pattern: {
-                value: /^[a-zA-Z0-9_]+$/,
-                message: "Solo se permiten letras, números y guiones bajos",
-              }
-            }}
             render={({ field }) => (
               <Input
                 {...field}
@@ -190,18 +232,11 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
             <Controller
               name="password"
               control={control}
-              rules={{
-                required: isCreating ? "La contraseña es requerida" : false,
-                minLength: {
-                  value: 6,
-                  message: "La contraseña debe tener al menos 6 caracteres",
-                },
-              }}
               render={({ field }) => (
                 <Input
                   {...field}
-                  id="password"
                   type="password"
+                  id="password"
                   className="bg-gray-700 border-gray-600 text-white"
                   placeholder="Ingrese la contraseña"
                 />
@@ -219,20 +254,6 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
             <Controller
               name="dpi"
               control={control}
-              rules={{
-                required: isCreating ? "El DPI es requerido" : false,
-                pattern: {
-                  value: /^\d{13}$/,
-                  message: "El DPI debe tener exactamente 13 dígitos",
-                },
-                validate: async (value) => {
-                  if (value && value.length === 13) {
-                    const exists = await validateExistUser(value, 'dpi');
-                    return !exists || "Este DPI ya está registrado";
-                  }
-                  return true;
-                }
-              }}
               render={({ field }) => (
                 <Input
                   {...field}
@@ -240,6 +261,10 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
                   className="bg-gray-700 border-gray-600 text-white"
                   placeholder="Ingrese el DPI (13 dígitos)"
                   maxLength={13}
+                  onBlur={async (e) => {
+                    field.onBlur();
+                    await handleDpiBlur(e);
+                  }}
                 />
               )}
             />
@@ -255,23 +280,6 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
           <Controller
             name="email"
             control={control}
-            rules={{
-              required: "El email es requerido",
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: "Ingrese un email válido",
-              },
-              validate: async (value) => {
-                if (!isCreating && user?.email === value) {
-                  return true;
-                }
-                if (value && value.includes('@')) {
-                  const exists = await validateExistUser({email: value});
-                  return !exists || "Este email ya está registrado";
-                }
-                return true;
-              }
-            }}
             render={({ field }) => (
               <Input
                 {...field}
@@ -279,6 +287,10 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
                 type="email"
                 className="bg-gray-700 border-gray-600 text-white"
                 placeholder="ejemplo@correo.com"
+                onBlur={async (e) => {
+                  field.onBlur();
+                  await handleEmailBlur(e);
+                }}
               />
             )}
           />
@@ -358,8 +370,8 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
             rules={{
               required: "El ingreso mensual es requerido",
               min: {
-                value: 0,
-                message: "El ingreso debe ser mayor a 0",
+                value: 100,
+                message: "El ingreso debe ser mayor a 100",
               },
             }}
             render={({ field }) => (
@@ -471,10 +483,10 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
         </DialogClose>
         <Button 
           type="submit" 
-          disabled={!isValid || loading}
+          disabled={!isValid || isLoading}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {loading ? "Guardando..." : "Guardar Cambios"}
+          {isLoading ? "Guardando..." : "Guardar Cambios"}
         </Button>
       </DialogFooter>
     </form>

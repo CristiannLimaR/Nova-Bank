@@ -1,12 +1,27 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '../components/ui/Button';
 import { toast } from 'sonner';
 import { forgotPassword as callForgotPasswordApi } from '../services/api'; 
 
+// Esquema de validación para el formulario de recuperación de contraseña
+const forgotPasswordSchema = z.object({
+  email: z.string()
+    .email('Formato de email inválido')
+    .min(1, 'El email es requerido')
+    .max(100, 'El email no puede exceder 100 caracteres'),
+});
+
 const ForgotPassword = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
   const navigate = useNavigate(); 
 
   const onSubmit = async (data) => {
@@ -51,13 +66,7 @@ const ForgotPassword = () => {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  {...register('email', {
-                    required: 'El email es requerido',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Formato de email inválido',
-                    },
-                  })}
+                  {...register('email')}
                   className="block w-full rounded-md border-0 bg-gray-800 py-2 pl-3 pr-3 text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary"
                   placeholder="email@ejemplo.com"
                 />

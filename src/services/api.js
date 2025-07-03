@@ -207,9 +207,51 @@ export const getProducts = async () => {
   }
 };
 
+export const getTransactions  = async (accountId) => {
+  try {
+    const res = await apiClient.get(`/transaction/account/${accountId}`);
+    return {
+      data: res.data,
+    };      
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
 export const searchProduct = async (id) => {
   try {
     return await apiClient.get(`/products/search/${id}`);
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+
+export const createTransaction = async (data) => {
+  try {
+    const res = await apiClient.post("/transaction/", data);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+}
+
+export const createDeposit = async (data) => {
+  try {
+    const res = await apiClient.post("/transaction/deposit", data);
+    return {
+      data: res.data,
+    };
   } catch (e) {
     return {
       error: true,
@@ -267,9 +309,21 @@ export const verifyAccount = async (accountId, data) => {
 };
 
 
+export const emailExists = async (email) => {
+  try {
+    return await apiClient.get(`/user/email-exists?email=${email}`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
 export const verifyExistUser = async (data) => {
   try {
-    return await apiClient.post(`/user/exists`, data);
+    const params = new URLSearchParams();
+    if (data.email) params.append('email', data.email);
+    if (data.dpi) params.append('dpi', data.dpi);
+    
+    return await apiClient.get(`/user/verify-exists?${params.toString()}`);
   } catch (e) {
     return { error: true, e };
   }
@@ -289,6 +343,19 @@ export const createProduct = async (formData) => {
     };
   }
 };
+export const getAllTransactions = async () => {
+  try {
+    const res = await apiClient.get(`/transaction/`);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
 
 export const updateProduct = async (id, formData) => {
   try {
@@ -297,6 +364,33 @@ export const updateProduct = async (id, formData) => {
         "Content-Type": "multipart/form-data",
       },
     });
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+};
+export const cancelTransaction = async (transactionId) => {
+  try {
+    const res = await apiClient.delete(`/transaction/${transactionId}`);
+    return {
+      data: res.data,
+    };
+  } catch (e) {
+    return {
+      error: true,
+      e,
+    };
+  }
+}
+
+export const updateTransaction = async (transactionId, data) => {
+  try {
+    const res = await apiClient.put(`/transaction/${transactionId}`, data);
+    return {
+      data: res.data,
+    };
   } catch (e) {
     return {
       error: true,
@@ -393,6 +487,22 @@ export const getActiveProductsCount = async () => {
 export const getMonthlyTransactionCounts = async () => {
   try {
     return await apiClient.get('/stats/monthly-transaction-counts');
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const emailAlreadyExists = async (email) => {
+  try {
+    return await apiClient.get(`/user/exists/email?email=${email}`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const dpiAlreadyExists = async (dpi) => {
+  try {
+    return await apiClient.get(`/user/exists/dpi?dpi=${dpi}`);
   } catch (e) {
     return { error: true, e };
   }

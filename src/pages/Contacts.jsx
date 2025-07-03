@@ -16,6 +16,20 @@ import {
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import useUsers from '../shared/hooks/useUsers';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+// Esquema de validación para el formulario de contacto
+const contactSchema = z.object({
+  accountNo: z.string()
+    .min(10, 'El número de cuenta debe tener exactamente 10 caracteres')
+    .max(10, 'El número de cuenta debe tener exactamente 10 caracteres')
+    .regex(/^\d+$/, 'El número de cuenta solo debe contener números'),
+  alias: z.string()
+    .min(2, 'El alias debe tener al menos 2 caracteres')
+    .max(50, 'El alias no puede exceder 50 caracteres'),
+});
 
 const Contacts = () => {
   const navigate = useNavigate();
@@ -30,15 +44,29 @@ const Contacts = () => {
   const [transferNote, setTransferNote] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
-  const [newContact, setNewContact] = useState({
-    accountNo: '',
-    alias: ''
-  });
   const [isSearching, setIsSearching] = useState(false);
   const [foundUser, setFoundUser] = useState(null);
 
+  // Configuración de react-hook-form para el formulario de contacto
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = useForm({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      accountNo: '',
+      alias: '',
+    },
+  });
+
+  const watchedAccountNo = watch('accountNo');
+
   const handleSearchAccount = async () => {
-    const accountNo = newContact.accountNo;
+    const accountNo = watchedAccountNo;
     if (!accountNo || accountNo.length !== 10) {
       toast.error("Error", {
         description: "Ingresa un número de cuenta válido de 10 caracteres",
@@ -64,8 +92,7 @@ const Contacts = () => {
     });
   };
 
-  const handleAddContact = async (e) => {
-    e.preventDefault();
+  const handleAddContact = async (data) => {
     if (!foundUser) {
       toast.error("Error", {
         description: "Debes buscar y validar la cuenta primero",
@@ -75,8 +102,8 @@ const Contacts = () => {
 
     try {
       const response = await addContact({
-        accountNo: newContact.accountNo,
-        alias: newContact.alias,
+        accountNo: data.accountNo,
+        alias: data.alias,
       });
       
       if (response) {
@@ -86,11 +113,9 @@ const Contacts = () => {
         });
         
         setIsAddContactModalOpen(false);
-        setNewContact({
-          accountNo: '',
-          alias: ''
-        });
+        reset();
         setFoundUser(null);
+        toast.success("Contacto agregado exitosamente");
       }
     } catch (error) {
       console.error('Error al agregar contacto:', error);
@@ -141,17 +166,15 @@ const Contacts = () => {
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Agregar Nuevo Contacto</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleAddContact} className="space-y-4">
+          <form onSubmit={handleSubmit(handleAddContact)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="accountNo">Número de Cuenta</Label>
                 <div className="flex gap-2">
                   <Input
                     id="accountNo"
-                    value={newContact.accountNo}
-                    onChange={(e) => setNewContact({ ...newContact, accountNo: e.target.value })}
+                    {...register('accountNo')}
                     placeholder="Ingrese el número de cuenta"
-                    required
                     className="bg-gray-700 border-gray-600 text-white"
                   />
                   <Button
@@ -164,18 +187,22 @@ const Contacts = () => {
                     {isSearching ? "Buscando..." : "Buscar"}
                   </Button>
                 </div>
+                {errors.accountNo && (
+                  <p className="text-red-400 text-sm">{errors.accountNo.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="alias">Alias</Label>
                 <Input
                   id="alias"
-                  value={newContact.alias}
-                  onChange={(e) => setNewContact({ ...newContact, alias: e.target.value })}
+                  {...register('alias')}
                   placeholder="Ingrese un alias para el contacto"
-                  required
                   className="bg-gray-700 border-gray-600 text-white"
                 />
+                {errors.alias && (
+                  <p className="text-red-400 text-sm">{errors.alias.message}</p>
+                )}
               </div>
             </div>
 
@@ -191,6 +218,10 @@ const Contacts = () => {
                 <Button 
                   variant="destructive" 
                   className="mr-2"
+                  onClick={() => {
+                    reset();
+                    setFoundUser(null);
+                  }}
                 >
                   Cancelar
                 </Button>
