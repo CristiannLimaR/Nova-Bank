@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Button } from "../ui/button";
 import { Check, DollarSign, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -84,7 +83,7 @@ const UnverifiedAccountList = ({ accounts, onVerify }) => {
                 Cuenta
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Usuario
+                Cliente
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Estado
@@ -104,7 +103,7 @@ const UnverifiedAccountList = ({ accounts, onVerify }) => {
                   {acc.accountNo}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-300">
-                  {acc.user?.username || "N/A"}
+                  {acc.user?.name || "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

@@ -9,7 +9,6 @@ const AdminAccountsPage = () => {
 
   const loadAccounts = async () => {
     const result = await fetchAllAccounts();
-    console.log(result);
     if (!result.error) {
       setAccounts(result.accounts);
     }

@@ -14,7 +14,7 @@ const CreditInfo = ({ data }) => {
   // Estos valores deberían venir de tu estado global o API
   const creditInfo = {
     availableCredit: data.availableCredit,
-    usedCredit: data.availableCredit - data.creditLimit,
+    usedCredit: data.creditLimit - data.availableCredit,
     creditLimit: data.creditLimit,
     nextPayment: formatDate(data.dateOfPayment),
     minimumPayment: data.payment

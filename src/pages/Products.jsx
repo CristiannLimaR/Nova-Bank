@@ -4,6 +4,26 @@ import { Button } from "../components/ui/Button";
 import useProducts from "../shared/hooks/useProducts";
 import ProductCard from "../components/cards/ProductCard";
 import useTransactions from "../shared/hooks/useTransactions";
+import useAccount from "../shared/hooks/useAccount";
+import useAccountStore from "../shared/stores/accountStore";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const Products = () => {
   const { products, loading, getProducts } = useProducts();
@@ -12,7 +32,9 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { createTransaction } = useTransactions();
   const [twoFactorCode, setTwoFactorCode] = useState("");
-
+  const { getMyAccount } = useAccount();
+  const account = useAccountStore((state) => state.account);
+  const [paymentMethod, setPaymentMethod] = useState("balance");
 
   useEffect(() => {
     getProducts();
@@ -34,6 +56,14 @@ const Products = () => {
     }).format(price);
   };
 
+  const handleOpenModal = async (product) => {
+    setSelectedProduct(product);
+    if (!account) {
+      await getMyAccount();
+    }
+    document.getElementById("product_modal").showModal();
+  };
+
   return (
     <div>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -49,25 +79,26 @@ const Products = () => {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar productos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-md border-0 bg-gray-800 pl-10 pr-4 text-sm text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary md:w-64"
+                className="h-10 w-full rounded-md border-0 bg-gray-800 text-white border-gray-700 pl-10 pr-4 text-sm placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-primary md:w-64"
               />
             </div>
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="h-10 rounded-md border-0 bg-gray-800 px-3 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-primary"
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category === "All" ? "Todos los Tipos" : category}
-                </option>
-              ))}
-            </select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-10 rounded-md border-0 bg-gray-800 text-white border-gray-700 px-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary w-48">
+                <SelectValue placeholder="Todos los Tipos" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 text-white">
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category === "All" ? "Todos los Tipos" : category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -138,10 +169,7 @@ const Products = () => {
                   <Button
                     size="sm"
                     disabled={!product.status}
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      document.getElementById("product_modal").showModal();
-                    }}
+                    onClick={() => handleOpenModal(product)}
                   >
                     {product.status ? "Solicitar" : "No Disponible"}
                   </Button>
@@ -160,52 +188,72 @@ const Products = () => {
         )}
       </div>
 
-      <dialog id="product_modal" className="modal">
-        <div className="modal-box">
-          <h3 className="text-2xl font-bold text-white">Confirmar la compra</h3>
-          <p className="py-2 text-sm text-white -600">
-            Ingrese su TwoFactorCode para completar la compra
-          </p>
-          <input
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setTwoFactorCode(""); } }}>
+        <DialogContent className="bg-gray-900 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirmar la compra</DialogTitle>
+            <DialogDescription>
+              Ingrese su TwoFactorCode para completar la compra
+            </DialogDescription>
+          </DialogHeader>
+          {account && (
+            <div className="mb-4 p-3 rounded bg-gray-800 text-white">
+              <div><span className="font-semibold">Cuenta:</span> {account.accountNo}</div>
+              <div><span className="font-semibold">Saldo disponible:</span> {account.balance?.toLocaleString("es-GT", { style: "currency", currency: "GTQ" })}</div>
+              <div><span className="font-semibold">Crédito disponible:</span> {account.availableCredit?.toLocaleString("es-GT", { style: "currency", currency: "GTQ" })}</div>
+            </div>
+          )}
+          <div className="mb-4">
+            <label className="block text-white mb-1">Método de pago</label>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger className="w-full rounded border bg-gray-800 text-white border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white">
+                <SelectValue placeholder="Selecciona método" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 text-white">
+                <SelectItem value="balance">Saldo</SelectItem>
+                <SelectItem value="credit">Crédito</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Input
             type="text"
             inputMode="numeric"
             pattern="\d*"
             placeholder="492039"
-            className="w-full rounded border border-white bg-transparent px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white mt-2"
+            className="w-full rounded border bg-gray-800 text-white border-gray-700 px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white mt-2"
             value={twoFactorCode}
-            onChange={(e) =>
-              setTwoFactorCode(e.target.value.replace(/\D/g, ""))
-            }
+            onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ""))}
           />
-          <div className="modal-action">
-            <form method="dialog" className="flex gap-2">
-              <button className="btn">Cerrar</button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  if (selectedProduct) {
-                    if (!twoFactorCode) {
-                      alert("Por favor, ingrese su TwoFactorCode.");
-                      return;
-                    }
-                    const transaction = {
-                      productId: selectedProduct._id,
-                      twoFactorCode: twoFactorCode,
-                      type: "PURCHASE",
-                    };
-                    createTransaction(transaction);
-                    setTwoFactorCode(""); 
-                    document.getElementById("product_modal").close();
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" className="bg-gray-800 text-white border-gray-700">Cerrar</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={() => {
+                if (selectedProduct) {
+                  if (!twoFactorCode) {
+                    alert("Por favor, ingrese su TwoFactorCode.");
+                    return;
                   }
-                }}
-              >
-                Comprar
-              </button>
-            </form>
-          </div>
-        </div>
-      </dialog>
+                  const transaction = {
+                    productId: selectedProduct._id,
+                    twoFactorCode: twoFactorCode,
+                    type: "PURCHASE",
+                    paymentMethod: paymentMethod,
+                  };
+                  createTransaction(transaction);
+                  setTwoFactorCode("");
+                  setSelectedProduct(null);
+                }
+              }}
+              className="bg-indigo-500 text-white"
+            >
+              Comprar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

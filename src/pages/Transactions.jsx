@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Filter, Calendar, ChevronDown, Plus, Banknote, ShoppingCart, Repeat } from 'lucide-react';
+import { Search, Filter, Calendar, ChevronDown, Plus, Banknote, ShoppingCart, Repeat, Eye } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import  useTransactions  from '../shared/hooks/useTransactions'; 
 import useAccountStore from '../shared/stores/accountStore';
 import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../components/ui/dialog';
 
 
 
@@ -11,10 +12,14 @@ const Transactions = () => {
   const navigate = useNavigate();
   const accountId = useAccountStore(state => state.account?._id);
   const { transactions, loading } = useTransactions(accountId);
+  console.log(transactions);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedMonth, setSelectedMonth] = useState('All');
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTransfer, setSelectedTransfer] = useState(null);
 
   const months = [
     'All',
@@ -28,6 +33,14 @@ const Transactions = () => {
     return months.slice(0, currentMonth + 2); // +2 porque necesitamos incluir 'All' y el mes actual
   };
 
+  const years = ['All', ...Array.from(new Set(transactions.map(t => (new Date(t.updatedAt)).getFullYear()))).sort((a, b) => b - a)];
+
+  const availableMonths = ['All', ...Array.from(new Set(
+    transactions
+      .filter(t => selectedYear === 'All' || (new Date(t.updatedAt)).getFullYear() === Number(selectedYear))
+      .map(t => months[(new Date(t.updatedAt)).getMonth() + 1])
+  )).filter(Boolean)];
+
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = (transaction.description || "")
       .toLowerCase()
@@ -38,7 +51,9 @@ const Transactions = () => {
     
     const transactionDate = new Date(transaction.updatedAt);
     const transactionMonth = transactionDate.getMonth();
+    const transactionYear = transactionDate.getFullYear();
     const matchesMonth = selectedMonth === 'All' || months[transactionMonth + 1] === selectedMonth;
+    const matchesYear = selectedYear === 'All' || transactionYear === Number(selectedYear);
 
     transaction.status = transaction.status === true ? 'Failed' : 'Completed';
     transaction.updatedAt = transaction.updatedAt.split('T')[0]; 
@@ -61,12 +76,11 @@ const Transactions = () => {
     }
 
 
-    return matchesSearch && matchesCategory && matchesMonth;
+    return matchesSearch && matchesCategory && matchesMonth && matchesYear;
   });
   
 
   const categories = ['All', ...new Set(transactions.map(t => t.type))];
-  const availableMonths = getAvailableMonths();
   
 
   return (
@@ -84,7 +98,7 @@ const Transactions = () => {
       <div className="text-gray-400">Cargando transacciones...</div>
     ) : (
       <>
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-5">
           <div className="col-span-2 relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -125,6 +139,21 @@ const Transactions = () => {
             </select>
             <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 pointer-events-none text-gray-400" />
           </div>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="h-10 w-full appearance-none rounded-md border-0 bg-gray-800 pl-10 pr-8 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-primary"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 pointer-events-none text-gray-400" />
+          </div>
         </div>
 
         <div className="rounded-lg bg-gray-900 overflow-hidden">
@@ -146,6 +175,9 @@ const Transactions = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Ver
                   </th>
                 </tr>
               </thead>
@@ -170,10 +202,23 @@ const Transactions = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`text-sm font-medium ${
-                            transaction.type === 'TRANSFER' || transaction.type === 'PURCHASE' ? 'text-red-400' : 'text-green-400'
+                            transaction.type === 'TRANSFER'
+                              ? (accountId === transaction.toAccount?._id
+                                  ? 'text-green-400'
+                                  : 'text-red-400')
+                              : transaction.type === 'PURCHASE'
+                              ? 'text-red-400'
+                              : 'text-green-400'
                           }`}
                         >
-                          {transaction.type === 'TRANSFER' || transaction.type === 'PURCHASE' ? '-' : '+'} ${Math.abs(transaction.amount).toFixed(2)}
+                          {transaction.type === 'TRANSFER'
+                            ? accountId === transaction.toAccount?._id
+                              ? '+ '
+                              : '- '
+                            : transaction.type === 'PURCHASE'
+                            ? '- '
+                            : '+ '}
+                          ${Math.abs(transaction.amount).toFixed(2)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -187,11 +232,26 @@ const Transactions = () => {
                           {transaction.status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {transaction.type === 'TRANSFER' && (
+                          <button
+                            onClick={() => {
+                              setSelectedTransfer(transaction);
+                              setModalOpen(true);
+                            }}
+                            className="focus:outline-none"
+                            title="Ver detalles de la transferencia"
+                            type="button"
+                          >
+                            <Eye className="h-5 w-5 text-blue-400 hover:text-blue-300 transition-colors" />
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="text-center py-6 text-gray-500">
+                    <td colSpan="6" className="text-center py-6 text-gray-500">
                       No hay transacciones que coincidan con los filtros.
                     </td>
                   </tr>
@@ -200,6 +260,50 @@ const Transactions = () => {
             </table>
           </div>
         </div>
+
+        {/* Dialog para mostrar detalles de la transferencia */}
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="bg-gray-900 text-white" showCloseButton>
+            <DialogHeader>
+              <DialogTitle>Detalles de la Transferencia</DialogTitle>
+            </DialogHeader>
+            {selectedTransfer && (
+              <>
+                {accountId === selectedTransfer.fromAccount?._id ? (
+                  // Saliente
+                  <div>
+                    <p className="text-gray-300 mb-2">Transferencia enviada a:</p>
+                    <div className="bg-gray-800 rounded p-3 mb-2">
+                      <p><span className="font-semibold text-white">Cuenta destino:</span> {selectedTransfer.toAccount?.accountNo || 'N/A'}</p>
+                      <p><span className="font-semibold text-white">Tipo:</span> {selectedTransfer.toAccount?.accountType || 'N/A'}</p>
+                      <p><span className="font-semibold text-white">Saldo:</span> ${selectedTransfer.toAccount?.balance?.toLocaleString() || 'N/A'}</p>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-gray-400 text-sm">Descripción: {selectedTransfer.description}</p>
+                      <p className="text-gray-400 text-sm">Fecha: {selectedTransfer.updatedAt}</p>
+                      <p className="text-gray-400 text-sm">Monto: <span className="text-red-400">- ${selectedTransfer.amount?.toLocaleString()}</span></p>
+                    </div>
+                  </div>
+                ) : accountId === selectedTransfer.toAccount?._id ? (
+                  // Entrante
+                  <div>
+                    <p className="text-gray-300 mb-2">Transferencia recibida de:</p>
+                    <div className="bg-gray-800 rounded p-3 mb-2">
+                      <p><span className="font-semibold text-white">Cuenta origen:</span> {selectedTransfer.fromAccount?.accountNo || 'N/A'}</p>
+                      <p><span className="font-semibold text-white">Tipo:</span> {selectedTransfer.fromAccount?.accountType || 'N/A'}</p>
+                      <p><span className="font-semibold text-white">Saldo:</span> ${selectedTransfer.fromAccount?.balance?.toLocaleString() || 'N/A'}</p>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-gray-400 text-sm">Descripción: {selectedTransfer.description}</p>
+                      <p className="text-gray-400 text-sm">Fecha: {selectedTransfer.updatedAt}</p>
+                      <p className="text-gray-400 text-sm">Monto: <span className="text-green-400">+ ${selectedTransfer.amount?.toLocaleString()}</span></p>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </>
     )}
   </div>

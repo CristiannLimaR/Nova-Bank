@@ -75,8 +75,7 @@ const AdminDashboard = () => {
     });
   }
 
-  // Debug: mostrar el valor de chartData
-  console.log('chartData:', chartData);
+  
 
   return (
     <div className="p-6 bg-gray-950 min-h-screen">

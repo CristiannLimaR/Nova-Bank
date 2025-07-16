@@ -10,18 +10,20 @@ import {
   getChartData as getChartDataRequest,
   getCredit as getCreditRequest,
 } from "../../services/api";
+import { toast } from "sonner";
+import { Description } from "@radix-ui/react-dialog";
 
-const useTransactions =  () => {
+const useTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const accountId = useAccountStore.getState().getAccountNo(); // cambiar por id despues 
+  const account = useAccountStore.getState().account;
 
   const fetchTransactions = async () => {
-    if (!accountId) return;
+    if (!account) return;
 
     setLoading(true);
-    const response = await getTransactionsRequest(accountId);
+    const response = await getTransactionsRequest(account.accountNo);
 
     if (response.error) {
       console.error("Error al obtener transacciones:", response.error);
@@ -57,12 +59,10 @@ const useTransactions =  () => {
       return response;
     }
     setTransactions((prev) =>
-        prev.map((tx) => 
-            tx._id === transactionId ? { ...tx, ...data } : tx
-        )
+      prev.map((tx) => (tx._id === transactionId ? { ...tx, ...data } : tx))
     );
     return response;
- };
+  };
 
   const createTransaction = async (data) => {
     const response = await createTransactionService(data);
@@ -71,8 +71,12 @@ const useTransactions =  () => {
       console.error(
         "Error al crear transacción:",
         response.error,
-        response.e?.message
+        response.e?.response.data.message
       );
+      toast.error("Error al crear transacción", {
+        description: response.e?.response.data.message,
+        duration: 1000,
+      });
     }
     return response;
   };
@@ -87,38 +91,40 @@ const useTransactions =  () => {
     setTransactions((prev) => [response.data.transaction, ...prev]);
     return response;
   };
-  
+
   const getAllTransactions = async () => {
     setLoading(true);
     const response = await getAllTransactionsRequest();
-    if (response.error) {   
-        console.error("Error al obtener todas las transacciones:", response.error);
-        setLoading(false);
-        return;
+    if (response.error) {
+      console.error(
+        "Error al obtener todas las transacciones:",
+        response.error
+      );
+      setLoading(false);
+      return;
     }
     setTransactions(response.data.transactions || []);
     setLoading(false);
     return response;
-};
-const getChartData = async () => {
-  const response = await getChartDataRequest(account._id);
-  if (response.error) {
-    toast.error("Error al obtener los datos del gráfico");
-    return;
-  }
+  };
+  const getChartData = async () => {
+    const response = await getChartDataRequest(account._id);
+    if (response.error) {
+      toast.error("Error al obtener los datos del gráfico");
+      return;
+    }
 
-  return response.data;
-};
+    return response.data;
+  };
 
-const getCredit = async () => {
-  const response = await getCreditRequest();
-  return response.data;
-};
-
+  const getCredit = async () => {
+    const response = await getCreditRequest();
+    return response.data;
+  };
 
   useEffect(() => {
     fetchTransactions();
-  }, [accountId]);
+  }, [account]);
 
   return {
     transactions,

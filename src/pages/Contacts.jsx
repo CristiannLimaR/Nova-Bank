@@ -126,13 +126,37 @@ const Contacts = () => {
   };
 
   const handleQuickTransfer = () => {
-    if (!transferAmount || !twoFactorCode) {
+    // Validaciones rápidas antes de navegar
+    console.log('selectedContact:', selectedContact);
+    if (!selectedContact || !selectedContact.account) {
+      toast.error("Error", {
+        description: "El contacto seleccionado no tiene datos de cuenta válidos.",
+      });
+      return;
+    }
+    const cuentaDestino = String(selectedContact.account.accountNo);
+    if (!cuentaDestino || cuentaDestino.length !== 10) {
+      toast.error("Error", {
+        description: "El número de cuenta destino no es válido",
+      });
+      return;
+    }
+    if (!transferAmount || isNaN(parseFloat(transferAmount)) || parseFloat(transferAmount) < 5 || parseFloat(transferAmount) > 2000) {
+      toast.error("Error", {
+        description: "El monto debe ser mayor o igual a Q5 y menor o igual a Q2000",
+      });
+      return;
+    }
+    if (!twoFactorCode || twoFactorCode.length !== 6 || !/^\d{6}$/.test(twoFactorCode)) {
+      toast.error("Error", {
+        description: "El código 2FA debe tener 6 dígitos numéricos",
+      });
       return;
     }
 
     navigate('/new-transaction', {
       state: {
-        destinationAccount: selectedContact.account.accountNumber,
+        destinationAccount: cuentaDestino,
         amount: transferAmount,
         comment: transferNote,
         twoFactorCode: twoFactorCode,
