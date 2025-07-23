@@ -12,12 +12,14 @@ import {
 } from "../../services/api";
 import { toast } from "sonner";
 import { Description } from "@radix-ui/react-dialog";
+import useAccount from "./useAccount";
 
 const useTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const account = useAccountStore.getState().account;
+  const { getMyAccount } = useAccount();
 
   const fetchTransactions = async () => {
     if (!account) return;
@@ -47,7 +49,6 @@ const useTransactions = () => {
         tx._id === transactionId ? { ...tx, status: "Revertido" } : tx
       )
     );
-
     return response;
   };
 
@@ -75,8 +76,10 @@ const useTransactions = () => {
       );
       toast.error("Error al crear transacción", {
         description: response.e?.response.data.message,
-        duration: 1000,
+        duration: 5000,
       });
+    } else {
+      await getMyAccount();
     }
     return response;
   };

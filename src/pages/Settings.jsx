@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { updateUser as updateUserApi, updatePassword as updatePasswordApi } from "../services/api.js";
+import { toast } from "sonner";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -106,7 +107,12 @@ const SettingsPage = () => {
     
     console.log('Payload a enviar:', payload);
     const result = await updatePasswordApi(payload);
-    console.log('Respuesta de la API:', result);
+    console.log(result)
+    if(!result.error){
+      toast.success("Contraseña cambiada con exito")
+    }else{
+      toast.error(result.e.msg)
+    }
 
     
   };

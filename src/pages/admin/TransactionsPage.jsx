@@ -203,25 +203,6 @@ const TransactionsPage = () => {
                       <RotateCcw className="w-5 h-5 mr-1" />
                       Revertir
                     </button>
-                    <button
-                      className={`flex items-center text-sm font-medium rounded px-3 py-1.5 transition ${
-                        deposit.canRevert
-                          ? "text-blue-400 hover:text-blue-300"
-                          : "text-gray-500 cursor-not-allowed"
-                      }`}
-                      disabled={!deposit.canRevert}
-                      title={
-                        deposit.canRevert
-                          ? "Puedes actualizar esta transacción"
-                          : "Ya no se puede actualizar. Pasó más de un minuto."
-                      }
-                      onClick={() =>
-                        navigate(`/admin/transactions/edit/${deposit.id}`)
-                      }
-                    >
-                      <RotateCcw className="w-5 h-5 mr-1 rotate-90" />
-                      Actualizar
-                    </button>
                   </td>
                 </tr>
               ))

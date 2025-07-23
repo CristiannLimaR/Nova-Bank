@@ -2,7 +2,7 @@ import axios from "axios";
 import useAuthStore from "../shared/stores/authStore";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000/bankSystem/v1",
+  baseURL: "https://nova-bank-new.onrender.com/bankSystem/v1",
   timeout: 5000,
 });
 apiClient.interceptors.request.use(
@@ -503,6 +503,22 @@ export const emailAlreadyExists = async (email) => {
 export const dpiAlreadyExists = async (dpi) => {
   try {
     return await apiClient.get(`/user/exists/dpi?dpi=${dpi}`);
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    return await apiClient.get("/user/me");
+  } catch (e) {
+    return { error: true, e };
+  }
+};
+
+export const getAccountByUserId = async (userId) => {
+  try {
+    return await apiClient.get(`/account/user/${userId}`);
   } catch (e) {
     return { error: true, e };
   }

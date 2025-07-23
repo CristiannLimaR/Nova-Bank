@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import useProducts from "../../shared/hooks/useProducts";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,9 @@ const ProductsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false); // EDITAR
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
-  // Cargar products
   useEffect(() => {
     const loadProducts = async () => {
       const res = await getProducts();
@@ -31,16 +32,18 @@ const ProductsPage = () => {
   }, []);
 
   // Filtrar products para le buscar
-  const filteredProducts = Array.isArray(products)
-    ? products.filter(
-        (product) =>
-          product &&
-          typeof product.name === "string" &&
-          typeof product.description === "string" &&
-          (product.name.toLowerCase().includes(search.toLowerCase()) ||
-            product.description.toLowerCase().includes(search.toLowerCase()))
-      )
-    : [];
+  const filteredProducts = useMemo(() => {
+    return Array.isArray(products)
+      ? products.filter(
+          (product) =>
+            product &&
+            typeof product.name === "string" &&
+            typeof product.description === "string" &&
+            (product.name.toLowerCase().includes(search.toLowerCase()) ||
+              product.description.toLowerCase().includes(search.toLowerCase()))
+        )
+      : [];
+  }, [products, search]);
 
   // Eliminar Product
   const handleDelete = async (id) => {
@@ -212,7 +215,6 @@ const ProductsPage = () => {
           </thead>
           <tbody className="divide-y divide-gray-700">
             {filteredProducts.map((product) => {
-              console.log(product);
               return (
                 <tr key={product._id} className="hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -270,7 +272,10 @@ const ProductsPage = () => {
                     </button>
                     <button
                       className="text-red-400 hover:text-red-300"
-                      onClick={() => handleDelete(product._id)}
+                      onClick={() => {
+                        setProductToDelete(product._id);
+                        setConfirmDeleteOpen(true);
+                      }}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -306,6 +311,37 @@ const ProductsPage = () => {
             >
               <p>Error al cargar la imagen</p>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmación de eliminación */}
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent className="bg-gray-800 text-white border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              ¿Estás seguro de que deseas eliminar este producto?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-end gap-4 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteOpen(false)}
+              className="border-gray-600 text-gray-300"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                await handleDelete(productToDelete);
+                setConfirmDeleteOpen(false);
+                setProductToDelete(null);
+              }}
+              className="bg-red-600 text-white"
+            >
+              Eliminar
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

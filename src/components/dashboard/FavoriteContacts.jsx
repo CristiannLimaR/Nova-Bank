@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { User, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import useAuthStore from '../../shared/stores/authStore';
+import { useNavigate } from 'react-router-dom';
 
 const FavoriteContacts = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchContacts = async () => {
       try {
@@ -50,13 +52,16 @@ const FavoriteContacts = () => {
                 <p className="text-xs text-gray-400">{contact.account.accountNo}</p>
               </div>
             </div>
-            <Button variant="default" size="sm">
+            <Button variant="default" size="sm" onClick={() => navigate('/contacts', { state: { selectedContact: contact } })}>
               SEND
             </Button>
           </div>
         ))}
       </div>
-      <button className="mt-4 w-full flex items-center justify-center space-x-2 rounded-md bg-gray-800 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors">
+      <button
+        className="mt-4 w-full flex items-center justify-center space-x-2 rounded-md bg-gray-800 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+        onClick={() => navigate('/contacts')}
+      >
         <span>Ver todos</span>
         <ChevronRight className="h-4 w-4" />
       </button>

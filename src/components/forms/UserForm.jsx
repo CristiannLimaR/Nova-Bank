@@ -16,49 +16,50 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter, DialogClose } from "@/components/ui/dialog";
 import useValidations from "@/shared/hooks/useValidations";
 
-// Esquema de validación para el formulario de usuario
-const userSchema = z.object({
-  name: z.string()
-    .min(2, 'El nombre debe tener al menos 2 caracteres')
-    .max(100, 'El nombre no puede exceder 100 caracteres'),
-  username: z.string()
-    .min(3, 'El usuario debe tener al menos 3 caracteres')
-    .max(50, 'El usuario no puede exceder 50 caracteres')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Solo se permiten letras, números y guiones bajos'),
-  password: z.string()
-    .min(6, 'La contraseña debe tener al menos 6 caracteres')
-    .max(100, 'La contraseña no puede exceder 100 caracteres')
-    .optional(),
-  dpi: z.string()
-    .length(13, 'El DPI debe tener exactamente 13 dígitos')
-    .regex(/^\d+$/, 'El DPI solo debe contener números'),
-  email: z.string()
-    .email('Formato de email inválido')
-    .min(1, 'El email es requerido')
-    .max(100, 'El email no puede exceder 100 caracteres'),
-  phone: z.string()
-    .min(8, 'El teléfono debe tener al menos 8 dígitos')
-    .max(15, 'El teléfono no puede exceder 15 dígitos')
-    .regex(/^\d+$/, 'El teléfono solo debe contener números')
-    .optional()
-    .or(z.literal('')),
-  accountType: z.enum(['SAVINGS', 'CHECKING'], {
-    required_error: 'Debe seleccionar un tipo de cuenta',
-  }),
-  monthlyIncome: z.string()
-    .min(1, 'El ingreso mensual es requerido')
-    .regex(/^\d+(\.\d{1,2})?$/, 'El ingreso mensual debe ser un número válido')
-    .refine((val) => parseFloat(val) > 100, 'El ingreso mensual debe ser mayor a 100')
-    .optional()
-    .or(z.literal('')),
-  role: z.enum(['USER_ROLE', 'ADMIN_ROLE'], {
-    required_error: 'Debe seleccionar un rol',
-  }),
-  address: z.string()
-    .min(5, 'La dirección debe tener al menos 5 caracteres')
-    .max(200, 'La dirección no puede exceder 200 caracteres'),
-  status: z.boolean(),
-});
+// Esquema de validación dinámico según si es creación o edición
+function getUserSchema(isCreating) {
+  return z.object({
+    name: z.string()
+      .min(2, 'El nombre debe tener al menos 2 caracteres')
+      .max(100, 'El nombre no puede exceder 100 caracteres'),
+    username: z.string()
+      .min(3, 'El usuario debe tener al menos 3 caracteres')
+      .max(50, 'El usuario no puede exceder 50 caracteres')
+      .regex(/^[a-zA-Z0-9_]+$/, 'Solo se permiten letras, números y guiones bajos'),
+    password: isCreating
+      ? z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').max(100, 'La contraseña no puede exceder 100 caracteres')
+      : z.string().optional().or(z.literal('')),
+    dpi: isCreating
+      ? z.string().length(13, 'El DPI debe tener exactamente 13 dígitos').regex(/^\d+$/, 'El DPI solo debe contener números')
+      : z.string().optional().or(z.literal('')),
+    email: z.string()
+      .email('Formato de email inválido')
+      .min(1, 'El email es requerido')
+      .max(100, 'El email no puede exceder 100 caracteres'),
+    phone: z.string()
+      .min(8, 'El teléfono debe tener al menos 8 dígitos')
+      .max(15, 'El teléfono no puede exceder 15 dígitos')
+      .regex(/^\d+$/, 'El teléfono solo debe contener números')
+      .optional()
+      .or(z.literal('')),
+    accountType: isCreating
+      ? z.enum(['SAVINGS', 'CHECKING'], { required_error: 'Debe seleccionar un tipo de cuenta' })
+      : z.string().optional().or(z.literal('')),
+    monthlyIncome: z.string()
+      .min(1, 'El ingreso mensual es requerido')
+      .regex(/^\d+(\.\d{1,2})?$/, 'El ingreso mensual debe ser un número válido')
+      .refine((val) => parseFloat(val) > 100, 'El ingreso mensual debe ser mayor a 100')
+      .optional()
+      .or(z.literal('')),
+    role: z.enum(['USER_ROLE', 'ADMIN_ROLE'], {
+      required_error: 'Debe seleccionar un rol',
+    }),
+    address: z.string()
+      .min(5, 'La dirección debe tener al menos 5 caracteres')
+      .max(200, 'La dirección no puede exceder 200 caracteres'),
+    status: z.boolean(),
+  });
+}
 
 const roles = [
   { value: "USER_ROLE", label: "Usuario" },
@@ -94,7 +95,7 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
     setError,
     clearErrors,
   } = useForm({
-    resolver: zodResolver(userSchema),
+    resolver: zodResolver(getUserSchema(isCreating)),
     defaultValues: {
       name: "",
       username: "",
@@ -108,7 +109,7 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
       address: "",
       status: true,
     },
-    mode: "onBlur", 
+    mode: "onChange", 
   });
 
   const email = watch("email");
@@ -151,19 +152,21 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
 
   useEffect(() => {
     if (user) {
-      reset({
+      const initialValues = {
         name: user.name || "",
         username: user.username || "",
         password: user.password || "",
         dpi: user.dpi || "",
         email: user.email || "",
-        phone: user.phone || "",
+        phone: user.phone !== undefined && user.phone !== null ? String(user.phone) : "",
         accountType: user.accountType || "SAVINGS",
-        monthlyIncome: user.monthlyIncome || "",
+        monthlyIncome: user.monthlyIncome !== undefined && user.monthlyIncome !== null ? String(user.monthlyIncome) : "",
         role: user.role || "USER_ROLE",
         address: user.address || "",
         status: user.status !== undefined ? user.status : true,
-      });
+      };
+      console.log("Valores iniciales para reset:", initialValues);
+      reset(initialValues, { keepErrors: false, keepDirty: false, keepTouched: false });
     }
   }, [user, reset]);
 
@@ -173,6 +176,14 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
       phone: data.phone ? parseInt(data.phone) : null,
       monthlyIncome: data.monthlyIncome ? parseFloat(data.monthlyIncome) : null,
     };
+
+    // Si estamos editando, eliminamos los campos que no queremos enviar
+    if (!isCreating) {
+      delete formattedData.password;
+      delete formattedData.dpi;
+      delete formattedData.accountType;
+    }
+
     onSave(formattedData);
   };
 
@@ -182,7 +193,8 @@ const UserForm = ({ user, onSave, onCancel, isCreating = false }) => {
   };
 
   // Para depuración
-  console.log(errors);
+  console.log("Errores de validación:", errors);
+  console.log("isValid:", isValid);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

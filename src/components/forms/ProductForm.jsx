@@ -67,14 +67,6 @@ const ProductForm = ({ product, onSave, onCancel, setEditingProduct }) => {
   });
 
   // Observar cambios en el formulario para actualizar el estado del producto
-  const formValues = watch();
-
-  useEffect(() => {
-    setEditingProduct({
-      ...product,
-      ...formValues,
-    });
-  }, [formValues, setEditingProduct]);
 
   useEffect(() => {
     // Limpiar la URL anterior antes de crear una nueva
@@ -117,7 +109,7 @@ const ProductForm = ({ product, onSave, onCancel, setEditingProduct }) => {
     const file = e.target.files[0];
     if (file) {
       setNewImage(file);
-      setEditingProduct({ ...product, img: file });
+      // No modificar setEditingProduct aquí
     }
   };
 
@@ -126,11 +118,11 @@ const ProductForm = ({ product, onSave, onCancel, setEditingProduct }) => {
       URL.revokeObjectURL(previewUrl);
       setNewImage(null);
       setPreviewUrl(null);
-      setEditingProduct({ ...product, img: null });
+      // No modificar setEditingProduct aquí
     }
     if (existingImage) {
       setExistingImage(null);
-      setEditingProduct({ ...product, img: null });
+      // No modificar setEditingProduct aquí
     }
   };
 
@@ -140,8 +132,9 @@ const ProductForm = ({ product, onSave, onCancel, setEditingProduct }) => {
     formData.append('description', data.description);
     formData.append('type', data.type);
     formData.append('enterprise', data.enterprise);
-    formData.append('disscountPorcent', data.disscountPorcent);
-    formData.append('originalPrice', data.originalPrice);
+    // Aseguramos que los campos numéricos se envíen como string numérico
+    formData.append('disscountPorcent', String(data.disscountPorcent));
+    formData.append('originalPrice', String(data.originalPrice));
     formData.append('status', data.status);
     
     if (newImage) {

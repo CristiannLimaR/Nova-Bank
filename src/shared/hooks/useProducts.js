@@ -29,7 +29,6 @@ export const useProducts = () => {
     }
     setProducts(response?.data?.products || []);
     setLoading(false);
-    console.log(response.data);
     return response.data;
   };
 
@@ -85,7 +84,9 @@ export const useProducts = () => {
       setLoading(false);
       return { error: true };
     }
-
+    toast.success("Producto actualizado correctamente", {
+      duration: 2000,
+    });
     setLoading(false);
     return response.data;
   };
@@ -104,7 +105,9 @@ export const useProducts = () => {
       setLoading(false);
       return { error: true };
     }
-
+    toast.success("Producto eliminado correctamente", {
+      duration: 2000,
+    });
     setLoading(false);
     return response.data;
   };

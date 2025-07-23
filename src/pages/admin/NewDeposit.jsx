@@ -9,6 +9,7 @@ import useAccount from "../../shared/hooks/useAccount";
 import  useAccountStore  from "../../shared/stores/accountStore";
 import { toast } from "sonner";
 import useTransactions from "../../shared/hooks/useTransactions";
+import useReceiptGenerator from "../../shared/hooks/useReceiptGenerator";
 
 const depositSchema = z.object({
   destinationAccount: z
@@ -36,6 +37,7 @@ const NewDeposit = () => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [transactionData, setTransactionData] = useState(null);
   const { searchAccount } = useAccount();
+  const downloadReceipt = useReceiptGenerator();
 
   const {
     register,
@@ -174,32 +176,6 @@ const NewDeposit = () => {
       setShowReceipt(true);
     };
 
-    const handleDownloadReceipt = () => {
-        const receiptContent = `
-          COMPROBANTE DE TRANSFERENCIA
-          ===========================
-          Fecha: ${transactionData.date}
-          ID de Transacción: ${transactionData.id}
-          
-          Cuenta Destino: ${transactionData.accountNo}
-          Beneficiario: ${transactionData.toName}
-          
-          Monto: Q${transactionData.amount}
-          Estado: ${transactionData.status}
-          ${transactionData.description ? `Comentario: ${transactionData.description}` : ''}
-        `;
-    
-        const blob = new Blob([receiptContent], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `comprobante-transferencia-${transactionData.id}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      };
-
       if (showReceipt && transactionData) {
           return (
             <div className="max-w-2xl mx-auto p-6">
@@ -264,7 +240,7 @@ const NewDeposit = () => {
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleDownloadReceipt}
+                  onClick={() => downloadReceipt(transactionData)}
                   className="flex-1"
                 >
                   <Download className="w-4 h-4 mr-2" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { use2FA } from '../shared/hooks/use2FA';
@@ -11,14 +11,17 @@ const TwoFactorAuth = () => {
   const [secretKey, setSecretKey] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [step, setStep] = useState(1);
+  const hasStarted2FA = useRef(false);
 
   useEffect(() => {
+    if (hasStarted2FA.current) return;
+    hasStarted2FA.current = true;
     const initialize2FA = async () => {
       const response = await start2FA();
       console.log(response)
       if (response) {
         setQrCode(response.qrCode);
-        setSecretKey(response.manualEntryKeydame);
+        setSecretKey(response.manualEntryKey);
       }
     };
     initialize2FA();

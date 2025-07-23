@@ -24,6 +24,7 @@ import {
   DialogClose,
   DialogDescription,
 } from "@/components/ui/dialog";
+import ProductPurchaseModal from "../components/modals/ProductPurchaseModal";
 
 const Products = () => {
   const { products, loading, getProducts } = useProducts();
@@ -35,17 +36,21 @@ const Products = () => {
   const { getMyAccount } = useAccount();
   const account = useAccountStore((state) => state.account);
   const [paymentMethod, setPaymentMethod] = useState("balance");
+  const getVerify = useAccountStore((state) => state.getVerify);
+  const isVerified = getVerify();
 
   useEffect(() => {
     getProducts();
   }, []);
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'All' || product.type === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = React.useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = filterCategory === 'All' || product.type === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, filterCategory]);
 
   const categories = ['All', ...new Set(products.map(p => p.type))];
 
@@ -63,6 +68,26 @@ const Products = () => {
     }
     document.getElementById("product_modal").showModal();
   };
+
+  if (!isVerified) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-500/10 mb-4">
+              <svg className="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">Cuenta Pendiente de Activación</h3>
+            <p className="text-sm text-gray-300">
+              Tu cuenta bancaria no ha sido activada, un administrador la activará pronto
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -188,71 +213,18 @@ const Products = () => {
         )}
       </div>
 
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setTwoFactorCode(""); } }}>
-        <DialogContent className="bg-gray-900 text-white">
-          <DialogHeader>
-            <DialogTitle>Confirmar la compra</DialogTitle>
-            <DialogDescription>
-              Ingrese su TwoFactorCode para completar la compra
-            </DialogDescription>
-          </DialogHeader>
-          {account && (
-            <div className="mb-4 p-3 rounded bg-gray-800 text-white">
-              <div><span className="font-semibold">Cuenta:</span> {account.accountNo}</div>
-              <div><span className="font-semibold">Saldo disponible:</span> {account.balance?.toLocaleString("es-GT", { style: "currency", currency: "GTQ" })}</div>
-              <div><span className="font-semibold">Crédito disponible:</span> {account.availableCredit?.toLocaleString("es-GT", { style: "currency", currency: "GTQ" })}</div>
-            </div>
-          )}
-          <div className="mb-4">
-            <label className="block text-white mb-1">Método de pago</label>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger className="w-full rounded border bg-gray-800 text-white border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white">
-                <SelectValue placeholder="Selecciona método" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 text-white">
-                <SelectItem value="balance">Saldo</SelectItem>
-                <SelectItem value="credit">Crédito</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Input
-            type="text"
-            inputMode="numeric"
-            pattern="\d*"
-            placeholder="492039"
-            className="w-full rounded border bg-gray-800 text-white border-gray-700 px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white mt-2"
-            value={twoFactorCode}
-            onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ""))}
-          />
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" className="bg-gray-800 text-white border-gray-700">Cerrar</Button>
-            </DialogClose>
-            <Button
-              type="button"
-              onClick={() => {
-                if (selectedProduct) {
-                  if (!twoFactorCode) {
-                    alert("Por favor, ingrese su TwoFactorCode.");
-                    return;
-                  }
-                  const transaction = {
-                    productId: selectedProduct._id,
-                    twoFactorCode: twoFactorCode,
-                    type: "PURCHASE",
-                    paymentMethod: paymentMethod,
-                  };
-                  createTransaction(transaction);
-                  setTwoFactorCode("");
-                  setSelectedProduct(null);
-                }
-              }}
-              className="bg-indigo-500 text-white"
-            >
-              Comprar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); } }}>
+        <ProductPurchaseModal
+          open={!!selectedProduct}
+          onClose={() => { setSelectedProduct(null); setTwoFactorCode(""); }}
+          product={selectedProduct}
+          account={account}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          twoFactorCode={twoFactorCode}
+          setTwoFactorCode={setTwoFactorCode}
+          createTransaction={createTransaction}
+        />
       </Dialog>
     </div>
   );

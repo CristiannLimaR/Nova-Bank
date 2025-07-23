@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { getMyAccount as getMyAccountRequest, searchAccount as searchAccountRequest, getAllAccounts as getAllAccountsRequest, verifyAccount as verifyAccountRequest } from "../../services/api";
+import { getMyAccount as getMyAccountRequest, searchAccount as searchAccountRequest, getAllAccounts as getAllAccountsRequest, verifyAccount as verifyAccountRequest, getAccountByUserId as getAccountByUserIdRequest } from "../../services/api";
 
 import useAccountStore from "../stores/accountStore.js";
 
@@ -77,11 +77,25 @@ const useAccount = () => {
     return { success: true };
   };
 
+  const getAccountByUserId = async (userId) => {
+    setLoading(true);
+    const response = await getAccountByUserIdRequest(userId);
+    setLoading(false);
+
+    if (response.error) {
+      toast.error("Error al obtener cuenta.");
+      return { error: true };
+    }
+
+    return { account: response.data.account };
+  };
+
   return {
     getMyAccount,
     searchAccount,
     fetchAllAccounts,
     changeAccountVerification,
+    getAccountByUserId,
     loading,
   };
 };

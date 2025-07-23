@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, ArrowLeftRight, ShoppingBag, DollarSign } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useStats } from '../../shared/hooks/useStats';
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const {
     systemStats,
     activeProductsCount,
@@ -161,7 +163,7 @@ const AdminDashboard = () => {
 
       {/* Accesos Rápidos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onClick={() => navigate("/admin/users")}> 
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-[#3DD9C9]/10 rounded-lg">
@@ -175,7 +177,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onClick={() => navigate("/admin/transactions")}> 
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-[#FF7E5F]/10 rounded-lg">
@@ -189,7 +191,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onClick={() => navigate("/admin/products")}> 
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-[#3DD9C9]/10 rounded-lg">
@@ -203,7 +205,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+        <Card className="bg-gray-900 border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onClick={() => navigate("/admin/reports")}> 
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-[#FF7E5F]/10 rounded-lg">
