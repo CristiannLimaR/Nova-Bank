@@ -129,7 +129,29 @@ const UsersPage = () => {
                     <span className="ml-2 text-gray-400 text-xs">{new Date(tx.createdAt).toLocaleString('es-GT')}</span>
                     <div className="text-gray-300 text-xs">{tx.description || 'Sin descripción'}</div>
                   </div>
-                  <div className={`font-bold ${tx.type === 'DEPOSIT' ? 'text-green-400' : 'text-red-400'}`}>{tx.type === 'DEPOSIT' ? '+' : '-'} Q{Math.abs(tx.amount).toFixed(2)}</div>
+                  {(() => {
+                    let isIngreso = false;
+                    if (tx.type === 'TRANSFER') {
+                      // Puede ser objeto o string
+                      const toAcc = typeof tx.toAccount === 'object' ? tx.toAccount?.accountNo : tx.toAccount;
+                      const fromAcc = typeof tx.fromAccount === 'object' ? tx.fromAccount?.accountNo : tx.fromAccount;
+                      if (toAcc === account.accountNo) {
+                        isIngreso = true;
+                      } else if (fromAcc === account.accountNo) {
+                        isIngreso = false;
+                      }
+                    } else if (tx.type === 'DEPOSIT') {
+                      isIngreso = true;
+                    } else {
+                      // PURCHASE, WITHDRAW, etc. son egresos
+                      isIngreso = false;
+                    }
+                    return (
+                      <div className={`font-bold ${isIngreso ? 'text-green-400' : 'text-red-400'}`}>
+                        {isIngreso ? '+' : '-'} Q{Math.abs(tx.amount).toFixed(2)}
+                      </div>
+                    );
+                  })()}
                 </div>
               </li>
             ))}

@@ -55,7 +55,7 @@ const Transactions = () => {
     const matchesMonth = selectedMonth === 'All' || months[transactionMonth + 1] === selectedMonth;
     const matchesYear = selectedYear === 'All' || transactionYear === Number(selectedYear);
 
-    transaction.status = transaction.status === true ? 'Failed' : 'Completed';
+    transaction.status = transaction.status === true ? 'Completed' : 'Failed';
     transaction.updatedAt = transaction.updatedAt.split('T')[0]; 
     transaction.icon =
       transaction.type === "TRANSFER" ? (

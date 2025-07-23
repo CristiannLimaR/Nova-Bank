@@ -70,7 +70,7 @@ const ProductPurchaseModal = ({
         </DialogClose>
         <Button
           type="button"
-          onClick={() => {
+          onClick={async () => {
             if (product) {
               if (!twoFactorCode) {
                 toast.error("Por favor, ingrese su TwoFactorCode.");
@@ -92,7 +92,10 @@ const ProductPurchaseModal = ({
                 type: "PURCHASE",
                 paymentMethod: paymentMethod,
               };
-              createTransaction(transaction);
+              const response = await createTransaction(transaction);
+              if (!response?.error) {
+                toast.success("¡Producto obtenido exitosamente!", { duration: 3000 });
+              }
               setTwoFactorCode("");
               onClose();
             }
