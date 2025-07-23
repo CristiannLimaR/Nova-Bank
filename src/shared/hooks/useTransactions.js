@@ -21,12 +21,19 @@ const useTransactions = () => {
   const account = useAccountStore.getState().account;
   const { getMyAccount } = useAccount();
 
+  const fetchAllTransactions = async () => {
+    const response = await getAllTransactionsRequest();
+    if (response.error) {
+      console.error("Error al obtener todas las transacciones:", response.error);
+      return;
+    }
+  }
+
   const fetchTransactions = async () => {
     if (!account) return;
 
     setLoading(true);
     const response = await getTransactionsRequest(account.accountNo);
-
     if (response.error) {
       console.error("Error al obtener transacciones:", response.error);
       setLoading(false);
@@ -54,7 +61,6 @@ const useTransactions = () => {
 
   const updateTransaction = async (transactionId, data) => {
     const response = await updateTransactionService(transactionId, data);
-    console.log("Response de updateTransaction:", response); // para depuración
     if (response.error) {
       console.error("Error al actualizar transacción:", response.e?.message);
       return response;
@@ -67,7 +73,6 @@ const useTransactions = () => {
 
   const createTransaction = async (data) => {
     const response = await createTransactionService(data);
-    console.log("Response de createTransaction:", response); // para depuración
     if (response.error) {
       console.error(
         "Error al crear transacción:",
@@ -86,7 +91,6 @@ const useTransactions = () => {
 
   const createDeposit = async (data) => {
     const response = await createDepositService(data);
-    console.log("Response de createDeposit:", response); // para depuración
     if (response.error) {
       console.error("Error al crear depósito:", response.error);
       return response;
@@ -140,6 +144,7 @@ const useTransactions = () => {
     updateTransaction,
     getChartData,
     getCredit,
+    fetchAllTransactions,
   };
 };
 

@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import UserEditForm from '@/components/forms/UserEditForm';
+import UserForm from '@/components/forms/UserForm';
 import useUsers from "@/shared/hooks/useUsers";
 import useAccount from "@/shared/hooks/useAccount";
 import { getTransactionsByAccountId } from '@/services/api';
@@ -25,6 +26,7 @@ const UsersPage = () => {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletTransactions, setWalletTransactions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   
 
   const handleEdit = (user) => {
@@ -227,12 +229,11 @@ const UsersPage = () => {
               </DialogTitle>
             </DialogHeader>
             {editingUser && isCreating && (
-              <UserEditForm
+              <UserForm
                 user={editingUser}
                 onSave={handleSave}
                 onCancel={handleCancel}
-                setEditingUser={setEditingUser}
-                isCreating={isCreating}
+                isCreating={true}
               />
             )}
             {editingUser && !isCreating && (
@@ -254,6 +255,8 @@ const UsersPage = () => {
             type="text"
             placeholder="Buscar usuarios..."
             className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -291,7 +294,18 @@ const UsersPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {users.map((user) => (
+            {users
+              .filter(user => {
+                if (!searchTerm) return true;
+                const term = searchTerm.toLowerCase();
+                return (
+                  String(user.name || "").toLowerCase().includes(term) ||
+                  String(user.username || "").toLowerCase().includes(term) ||
+                  String(user.email || "").toLowerCase().includes(term) ||
+                  String(user.dpi || "").toLowerCase().includes(term)
+                );
+              })
+              .map((user) => (
               <tr key={user._id} className="hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap max-w-[10rem] truncate">
                   <div className="text-sm font-medium text-white truncate">{user.name}</div>

@@ -22,6 +22,7 @@ const TransactionsPage = () => {
           }),
           status: tx.status ? "Completed" : "Cancelled",
           canRevert: (Date.now() -new Date(tx.updatedAt) < 60 * 1000) ? true : false, // Puede revertir solo si la transacción se actualizó hace menos de 1 minuto
+          accountNo: tx.toAccount?.accountNo || tx.toAccount || "N/A",
         }));
 
       setDeposits(depositsOnly);
@@ -51,7 +52,9 @@ const TransactionsPage = () => {
   };
 
   const filteredDeposits = deposits.filter((deposit) => {
-    const matchesSearch = deposit.user.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      deposit.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(deposit.accountNo).toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = selectedStatus === 'Todos' || deposit.status === selectedStatus;
     const matchesMonth = selectedMonth === 'Todos' || getMonthName(deposit.date) === selectedMonth;
     return matchesSearch && matchesStatus && matchesMonth;
@@ -128,6 +131,9 @@ const TransactionsPage = () => {
                 Administrador
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Cuenta
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Monto
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -148,6 +154,11 @@ const TransactionsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-white">
                       {deposit.user}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-white">
+                      {deposit.accountNo}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -202,6 +213,25 @@ const TransactionsPage = () => {
                     >
                       <RotateCcw className="w-5 h-5 mr-1" />
                       Revertir
+                    </button>
+                    <button
+                      className={`flex items-center text-sm font-medium rounded px-3 py-1.5 transition ${
+                        deposit.canRevert
+                          ? "text-blue-400 hover:text-blue-300"
+                          : "text-gray-500 cursor-not-allowed"
+                      }`}
+                      disabled={!deposit.canRevert}
+                      title={
+                        deposit.canRevert
+                          ? "Puedes actualizar esta transacción"
+                          : "Ya no se puede actualizar. Pasó más de un minuto."
+                      }
+                      onClick={() =>
+                        navigate(`/admin/transactions/edit/${deposit.id}`)
+                      }
+                    >
+                      <RotateCcw className="w-5 h-5 mr-1 rotate-90" />
+                      Actualizar
                     </button>
                   </td>
                 </tr>

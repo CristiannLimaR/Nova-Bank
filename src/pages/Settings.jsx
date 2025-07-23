@@ -120,7 +120,6 @@ const SettingsPage = () => {
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
     { id: "security", label: "Security", icon: Shield },
-    { id: "notifications", label: "Notifications", icon: Bell },
   ];
 
   return (
@@ -421,59 +420,6 @@ const SettingsPage = () => {
                     </div>
                   </div>
                 </form>
-              </div>
-            )}
-
-            {activeTab === "notifications" && (
-              <div>
-                <h2 className="mb-6 text-xl font-semibold text-white">
-                  Notification Preferences
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="mb-4 text-lg font-medium text-white">
-                      Email Notifications
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Transaction Alerts
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Get notified about all transactions
-                          </p>
-                        </div>
-                        <label className="relative inline-flex cursor-pointer items-center">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            className="peer sr-only"
-                          />
-                          <div className="peer h-6 w-11 rounded-full bg-gray-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-focus:outline-hidden"></div>
-                        </label>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Security Alerts
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Get notified about security updates
-                          </p>
-                        </div>
-                        <label className="relative inline-flex cursor-pointer items-center">
-                          <input
-                            type="checkbox"
-                            defaultChecked
-                            className="peer sr-only"
-                          />
-                          <div className="peer h-6 w-11 rounded-full bg-gray-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-focus:outline-hidden"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
           </div>

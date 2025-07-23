@@ -12,7 +12,7 @@ const Transactions = () => {
   const navigate = useNavigate();
   const accountId = useAccountStore(state => state.account?._id);
   const { transactions, loading } = useTransactions(accountId);
-  console.log(transactions);
+  console.log(transactions, 'transactions');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -55,7 +55,7 @@ const Transactions = () => {
     const matchesMonth = selectedMonth === 'All' || months[transactionMonth + 1] === selectedMonth;
     const matchesYear = selectedYear === 'All' || transactionYear === Number(selectedYear);
 
-    transaction.status = transaction.status === true ? 'Completed' : 'Failed';
+    transaction.status = 'Completed';
     transaction.updatedAt = transaction.updatedAt.split('T')[0]; 
     transaction.icon =
       transaction.type === "TRANSFER" ? (

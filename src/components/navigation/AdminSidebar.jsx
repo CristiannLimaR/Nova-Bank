@@ -65,6 +65,20 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
           <X size={20} />
         </button>
       </div>
+      {/* Botón para ir a la página principal */}
+      {user?.name !== 'Default Admin' && (
+        <div className="px-4 pt-2">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `group flex items-center rounded-md px-2 py-2 text-sm font-medium bg-gray-800 text-white hover:bg-gray-700 hover:text-white`
+            }
+          >
+            <ArrowLeftRight className="mr-3 h-5 w-5" />
+            Ir a inicio
+          </NavLink>
+        </div>
+      )}
       <div className="flex flex-1 flex-col overflow-y-auto py-4">
         <nav className="flex-1 space-y-1 px-2">
           {navItems.map((item) => (

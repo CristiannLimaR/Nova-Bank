@@ -12,16 +12,6 @@ const useAccount = () => {
     setLoading(false);
     const response = await getMyAccountRequest();
 
-    if (response.error) {
-      toast.error("Error al obtener cuenta", {
-        description:
-          response.error?.response?.data ||
-          "Ocurrio un error al obtener la cuenta",
-        duration: 2000,
-      });
-      setLoading(false);
-    }
-
     const { account } = response.data;
     console.log(account)
     setAccount(account)

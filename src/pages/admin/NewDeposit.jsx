@@ -142,6 +142,14 @@ const NewDeposit = () => {
     };
 
   const onSubmit = (data) => {
+    if (!foundUser) {
+      toast.error("Debes buscar y seleccionar una cuenta de destino válida antes de continuar.");
+      return;
+    }
+    if (data.destinationAccount === String(account.accountNo)) {
+      toast.error("No puedes depositar a tu propia cuenta.");
+      return;
+    }
     setShowConfirmation(true);
   };
 
